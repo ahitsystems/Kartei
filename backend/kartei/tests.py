@@ -1537,3 +1537,48 @@ class PrintLogoTests(ApiTestBase):
         self.j("put", "/api/admin/settings", {"print_logo_mode": "custom"})
         self.assertEqual(self.client.delete("/api/admin/print-logo").json()["print_logo_mode"], "kartei")
         self.assertEqual(self.client.get("/api/print-logo").status_code, 404)
+
+
+class PhonebookExportTests(TestCase):
+    """Swyx-style phonebook: one row per number, a suffix for unique names, canonical numbers."""
+    setUp = ExportTests.setUp
+
+    def phonebook(self, **opts):
+        cols = [{"header": "Name", "person": "calc:display_name", "company": "core:name", "suffix_target": True},
+                {"header": "Nummer", "split": [{"person": "field:phone_work", "company": "field:company_phone"},
+                                               {"person": "field:mobile", "suffix": " (Mobil)"}]},
+                {"header": "Beschreibung", "person": "field:department", "company": ""},
+                {"header": "Show", "person": "const:Show", "company": "const:Show"}]
+        return ExportProfile.objects.create(name="swyx", path=f"{self.dir}/pb.csv", columns=cols,
+                                            options={"quoting": "all", "header": False, "encoding": "utf-8", **opts})
+
+    def test_split_column_one_row_per_number(self):
+        Settings.objects.update(phone_country_code="+49")
+        p = self.phonebook(phone_format="canonical")
+        self.assertEqual(exports.validate_profile(p), {})
+        self.assertEqual(exports.run(p), "ok", p.last_message)
+        lines = open(p.path, encoding="utf-8").read().splitlines()
+        person = Record.objects.get(kind="person").display_name
+        self.assertIn(f'"{person}";"+495111234567";', "\n".join(lines))
+        self.assertIn(f'"{person} (Mobil)";"+491701234567";', "\n".join(lines))
+        self.assertTrue(all(l.endswith(';"Show"') for l in lines))
+        companies = Record.objects.filter(kind="company", data__company_phone__isnull=False).count()
+        self.assertEqual(len(lines), 2 + companies)  # contacts without any number are left out
+        self.assertNotIn("@export_duplicate_names", p.last_message)
+
+    def test_local_numbers_and_duplicate_names_reported(self):
+        Settings.objects.update(phone_country_code="+49")
+        r = Record.objects.get(kind="person")
+        r.data["phone_work"] = "123"
+        r.save()
+        Record.objects.create(kind="person", first_name=r.first_name, last_name=r.last_name, data={"phone_work": "0511 99"})
+        p = self.phonebook(phone_format="canonical")
+        self.assertEqual(exports.run(p), "ok", p.last_message)
+        self.assertIn('"123"', open(p.path, encoding="utf-8").read())
+        self.assertIn('@export_not_canonical {"n": 1}', p.last_message)
+        self.assertIn('@export_duplicate_names {"n": 1}', p.last_message)
+
+    def test_one_split_column(self):
+        p = self.phonebook()
+        p.columns.append({**p.columns[1]})
+        self.assertEqual(exports.validate_profile(p)["columns"], "one_split_column")

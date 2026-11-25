@@ -362,7 +362,8 @@ class Record(models.Model):
 def default_csv_options():
     return {"delimiter": ";", "quotechar": '"', "quoting": "minimal", "encoding": "utf-8-sig",
             "line_ending": "crlf", "header": True, "newlines": "keep", "multi_sep": ", ",
-            "date_format": "%d.%m.%Y", "decimal_sep": ",", "escape_formulas": True}
+            "date_format": "%d.%m.%Y", "decimal_sep": ",", "escape_formulas": True,
+            "phone_format": "stored"}
 
 
 def default_xlsx_options():
@@ -379,7 +380,7 @@ class ExportProfile(models.Model):
     kinds = models.CharField(max_length=7, choices=[("person", "person"), ("company", "company"), ("both", "both")], default="both")
     filter_field = models.ForeignKey(FieldDef, null=True, blank=True, on_delete=models.SET_NULL, related_name="+")
     filter_values = models.JSONField(default=list, blank=True)
-    columns = models.JSONField(default=list, blank=True)  # [{"header", "person", "company"}], see exports.resolve()
+    columns = models.JSONField(default=list, blank=True)  # [{"header", "person", "company"}], see exports.build_rows()
     options = models.JSONField(default=dict, blank=True)  # merged over default_*_options()
     max_shrink_percent = models.PositiveSmallIntegerField(default=10)
 

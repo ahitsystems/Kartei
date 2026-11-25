@@ -1,14 +1,15 @@
 <script lang="ts">
-  import { FileSpreadsheet, FileText, GripVertical, Play, Plus, Trash2, Eye, ListPlus } from '@lucide/svelte'
+  import { Download, FileSpreadsheet, FileText, GripVertical, Play, Plus, Split, Tag, Trash2, Eye, ListPlus, Upload, X } from '@lucide/svelte'
   import Combobox from '../components/Combobox.svelte'
-  import { ApiError, del, get, patch, post } from '../lib/api'
+  import { ApiError, del, downloadJson, get, patch, post, readJson } from '../lib/api'
   import { dateTime, relTime } from '../lib/format'
   import { L, i18n, t, terr, tmsg } from '../lib/i18n.svelte'
   import { toast } from '../lib/toast.svelte'
   import { confirmDialog } from '../lib/confirm.svelte'
   import type { L10n } from '../lib/types'
 
-  interface Column { header: string; person: string; company: string }
+  interface Part { person: string; company: string; suffix?: string }
+  interface Column { header: string; person: string; company: string; split?: Part[]; suffix_target?: boolean }
   interface Profile {
     id?: number; name: string; enabled: boolean; format: 'csv' | 'xlsx'; path: string; schedule: 'auto' | 'manual'
     kinds: 'person' | 'company' | 'both'; filter_field: number | null; filter_values: string[]; columns: Column[]
@@ -18,7 +19,8 @@
   interface Sources { core: string[]; calc: string[]; fields: { key: string; label: L10n; applies_to: string; type: string }[] }
 
   const CSV_DEFAULTS = { delimiter: ';', quotechar: '"', quoting: 'minimal', encoding: 'utf-8-sig', line_ending: 'crlf', header: true,
-    newlines: 'keep', multi_sep: ', ', date_format: '%d.%m.%Y', decimal_sep: ',', bool_true: 'Ja', bool_false: 'Nein', escape_formulas: true }
+    newlines: 'keep', multi_sep: ', ', date_format: '%d.%m.%Y', decimal_sep: ',', bool_true: 'Ja', bool_false: 'Nein', escape_formulas: true,
+    phone_format: 'stored' }
   const XLSX_DEFAULTS = { sheet_name: 'Kontakte', header: true, bold_header: true, autofilter: true, freeze_header: true,
     autowidth: true, date_format: 'DD.MM.YYYY', number_format: '#,##0.00' }
 
@@ -135,9 +137,45 @@
     edit!.columns.push({ header: '', person: '', company: '' })
   }
 
-  function onPick(c: Column, side: 'person' | 'company', v: string | null) {
+  function toggleSplit(c: Column) {
+    if (c.split) delete c.split
+    else if (!edit!.columns.some((x) => x.split)) c.split = [{ person: c.person, company: c.company, suffix: '' }]
+  }
+
+  function toggleTarget(c: Column) {
+    const on = !c.suffix_target
+    for (const x of edit!.columns) delete x.suffix_target
+    if (on) c.suffix_target = true
+  }
+
+  // share a profile as a file: the filter field by key (ids differ between installations), the path only by file name
+  function exportProfile() {
+    const b = body()
+    const file = b.path.split('/').pop()
+    downloadJson(`kartei-export-${file.replace(/\.\w+$/, '')}.json`, {
+      kartei_export: 1, name: b.name, format: b.format, path: file, schedule: b.schedule, kinds: b.kinds, enabled: b.enabled,
+      filter_field: fieldDefs.find((f) => f.id === b.filter_field)?.key ?? null, filter_values: b.filter_values,
+      columns: b.columns, options: b.options, max_shrink_percent: b.max_shrink_percent })
+  }
+
+  async function importProfile(file: File | undefined) {
+    const d = file && (await readJson(file))
+    if (d?.kartei_export !== 1 || !['csv', 'xlsx'].includes(d.format) || !Array.isArray(d.columns)) {
+      toast(t('exports.import_invalid'), { kind: 'error' })
+      return
+    }
+    const ff = d.filter_field ? fieldDefs.find((f) => f.key === d.filter_field) : null
+    if (d.filter_field && !ff) toast(t('exports.import_no_filter', { key: d.filter_field }), { kind: 'error' })
+    create(d.format)
+    Object.assign(edit!, { name: String(d.name ?? ''), schedule: d.schedule ?? 'auto', kinds: d.kinds ?? 'both', enabled: d.enabled !== false,
+      filter_field: ff?.id ?? null, filter_values: ff ? d.filter_values ?? [] : [], columns: d.columns, options: d.options ?? {},
+      max_shrink_percent: d.max_shrink_percent ?? 10 })
+    if (d.path) edit!.path = `${root}/${String(d.path).split('/').pop()}`
+  }
+
+  function onPick(c: Column | Part, side: 'person' | 'company', v: string | null) {
     c[side] = v ?? ''
-    if (!c.header && v) c.header = sourceOptions.find((s) => s.value === v)?.label ?? ''
+    if ('header' in c && !c.header && v) c.header = sourceOptions.find((s) => s.value === v)?.label ?? ''
   }
 
   function dropCol(i: number) {
@@ -155,6 +193,8 @@
   <div class="toolbar">
     <button class="btn primary" onclick={() => create('csv')}><FileText size={15} />{t('exports.new_csv')}</button>
     <button class="btn" onclick={() => create('xlsx')}><FileSpreadsheet size={15} />{t('exports.new_xlsx')}</button>
+    <label class="btn" title={t('exports.import_hint')}><Upload size={15} />{t('exports.import')}
+      <input type="file" accept=".json,application/json" hidden onchange={(e) => { importProfile(e.currentTarget.files?.[0]); e.currentTarget.value = '' }} /></label>
     <span class="hint">{t('exports.root', { root })}</span>
   </div>
   <table class="grid">
@@ -170,7 +210,7 @@
             {#if p.last_run_at}
               <span class="badge" class:ok={p.last_status === 'ok'} class:err={p.last_status === 'error'}>{p.last_status}</span>
               <span class="muted" title={dateTime(p.last_run_at)}>{relTime(p.last_run_at)}</span>
-              <div class="msg" class:bad={p.last_status === 'error'}>{tmsg(p.last_message)}</div>
+              <div class="msg" class:bad={p.last_status === 'error'}>{#each (p.last_message ?? '').split('\n@') as m, i}<div>{tmsg(i ? '@' + m : m)}</div>{/each}</div>
             {:else}<span class="muted">—</span>{/if}
           </td>
           <td class="act" onclick={(e) => e.stopPropagation()}>
@@ -233,25 +273,45 @@
           <div class="col" draggable="true" ondragstart={() => (dragIdx = i)} ondragover={(e) => e.preventDefault()} ondrop={() => dropCol(i)} role="listitem">
             <span class="grip"><GripVertical size={14} /></span>
             <input class="input" bind:value={c.header} />
-            {#if edit.kinds !== 'company'}
+            {#if c.split}
+              <span class="splitnote">{t('exports.split_note')}</span>
+            {:else if edit.kinds !== 'company'}
               {#if c.person.startsWith('const:')}
                 <input class="input" value={c.person.slice(6)} oninput={(e) => (c.person = 'const:' + e.currentTarget.value)} placeholder={t('exports.const')} />
               {:else}
                 <Combobox options={sourceOptions} value={c.person || null} placeholder={t('exports.empty_col')} onchange={(v) => onPick(c, 'person', v)} />
               {/if}
             {:else}<span></span>{/if}
-            {#if edit.kinds !== 'person'}
+            {#if !c.split}{#if edit.kinds !== 'person'}
               {#if c.company.startsWith('const:')}
                 <input class="input" value={c.company.slice(6)} oninput={(e) => (c.company = 'const:' + e.currentTarget.value)} placeholder={t('exports.const')} />
               {:else}
                 <Combobox options={sourceOptions} value={c.company || null} placeholder={t('exports.empty_col')} onchange={(v) => onPick(c, 'company', v)} />
               {/if}
-            {:else}<span></span>{/if}
+            {:else}<span></span>{/if}{/if}
             <span class="colact">
+              <button class="btn icon sm ghost" class:on={c.split} title={t('exports.split')} aria-pressed={!!c.split}
+                      disabled={!c.split && edit.columns.some((x) => x.split)} onclick={() => toggleSplit(c)}><Split size={13} /></button>
+              <button class="btn icon sm ghost" class:on={c.suffix_target} title={t('exports.suffix_target')} aria-pressed={!!c.suffix_target}
+                      onclick={() => toggleTarget(c)}><Tag size={13} /></button>
               <button class="btn icon sm ghost" title={t('exports.const')} onclick={() => { c.person = c.person.startsWith('const:') ? '' : 'const:'; c.company = c.company.startsWith('const:') ? '' : 'const:' }}>“”</button>
               <button class="btn icon sm ghost" onclick={() => edit!.columns.splice(i, 1)} aria-label={t('common.remove')}><Trash2 size={13} /></button>
             </span>
           </div>
+          {#if c.split}
+            {#each c.split as part, j (j)}
+              <div class="col part">
+                <span></span>
+                <input class="input" bind:value={part.suffix} placeholder={t('exports.suffix')} aria-label={t('exports.suffix')} />
+                {#if edit.kinds !== 'company'}<Combobox options={sourceOptions} value={part.person || null} placeholder={t('exports.empty_col')} onchange={(v) => onPick(part, 'person', v)} />{:else}<span></span>{/if}
+                {#if edit.kinds !== 'person'}<Combobox options={sourceOptions} value={part.company || null} placeholder={t('exports.empty_col')} onchange={(v) => onPick(part, 'company', v)} />{:else}<span></span>{/if}
+                <span class="colact"><button class="btn icon sm ghost" disabled={c.split.length < 2} onclick={() => c.split!.splice(j, 1)} aria-label={t('common.remove')}><X size={13} /></button></span>
+              </div>
+            {/each}
+            <div class="col part"><span></span>
+              <span><button class="btn sm" onclick={() => c.split!.push({ person: '', company: '', suffix: '' })}><Plus size={13} />{t('exports.split_add')}</button></span>
+            </div>
+          {/if}
         {/each}
       </div>
     </div>
@@ -292,6 +352,10 @@
             <select id="ds" class="select" value={o.decimal_sep} onchange={(e) => setOpt('decimal_sep', e.currentTarget.value)}>
               <option value=",">1234,56</option><option value=".">1234.56</option>
             </select></div>
+          <div><label class="label" for="pf">{t('csv.phone_format')}</label>
+            <select id="pf" class="select" value={o.phone_format} onchange={(e) => setOpt('phone_format', e.currentTarget.value)}>
+              <option value="stored">{t('csv.phone_stored')}</option><option value="canonical">{t('csv.phone_canonical')}</option>
+            </select></div>
           <div><label class="label" for="bt">{t('csv.bool')}</label>
             <div class="pair"><input id="bt" class="input" value={o.bool_true} oninput={(e) => setOpt('bool_true', e.currentTarget.value)} />
               <input class="input" value={o.bool_false} oninput={(e) => setOpt('bool_false', e.currentTarget.value)} aria-label={t('common.no')} /></div></div>
@@ -329,6 +393,7 @@
     <div class="footer">
       {#if edit.id}<button class="btn danger" onclick={() => remove(edit!)}><Trash2 size={14} />{t('common.delete')}</button>{/if}
       <span class="spacer"></span>
+      <button class="btn" onclick={exportProfile} title={t('exports.share_hint')}><Download size={15} />{t('exports.share')}</button>
       <button class="btn" onclick={showPreview}><Eye size={15} />{t('exports.show_preview')}</button>
       <button class="btn" onclick={() => (edit = null)}>{t('common.cancel')}</button>
       <button class="btn primary" onclick={save}>{t('common.save')}</button>
@@ -353,10 +418,13 @@
   .head h3 { flex: 1; }
   h3 { font-size: 13px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; }
   .cols { display: flex; flex-direction: column; gap: 6px; }
-  .colhead, .col { display: grid; grid-template-columns: 20px 1fr 1.3fr 1.3fr 64px; gap: 8px; align-items: center; }
+  .colhead, .col { display: grid; grid-template-columns: 20px minmax(0, 1fr) minmax(0, 1.3fr) minmax(0, 1.3fr) 120px; gap: 8px; align-items: center; }
   .colhead { font-size: 12px; color: var(--muted); }
   .grip { color: var(--faint); cursor: grab; }
   .colact { display: flex; gap: 2px; }
+  .colact .on { color: var(--accent); background: var(--accent-soft); }
+  .part { padding-left: 24px; }
+  .splitnote { grid-column: span 2; font-size: 12px; color: var(--muted); }
   .pair { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; }
   .pv { max-height: 360px; }
   .pv td { white-space: pre-wrap; font-size: 13px; }

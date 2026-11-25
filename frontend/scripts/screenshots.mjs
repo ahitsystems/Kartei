@@ -159,7 +159,10 @@ const SHOTS = [
   { name: 'proposal-company-gone', user: 'mmuster', path: (h) => `/company/${h.gone}` },
   { name: 'quality-open', user: 'admin', path: '/quality', steps: async (p) => { await p.locator('details.card summary').last().click(); await p.locator('details.card').last().evaluate((e) => e.scrollIntoView({ block: 'end' })); await wait(300) } },
   { name: 'settings-field-editor', user: 'admin', path: '/settings/fields', steps: open('tr.click >> nth=2') },
-  { name: 'settings-export-editor', user: 'admin', path: '/settings/exports', steps: open('tr.click') },
+  // the Swyx phonebook profile from seed_demo: shows the split column and the name column
+  { name: 'settings-export-editor', user: 'admin', path: '/settings/exports', steps: async (p) => {
+      await p.locator('tr.click', { hasText: 'Swyx' }).click(); await wait(500)
+      await p.locator('.cols').evaluate((e) => e.closest('.card').scrollIntoView({ block: 'start' })); await wait(300) } },
   { name: 'settings-review-rolling', user: 'admin', path: '/settings/review', steps: open('input[type=radio][value=rolling]') },
   { name: 'settings-phonebook', user: 'admin', path: '/settings/carddav', before: publicUrl, after: restoreUrl, steps: async (p) => {
       await p.locator('h2', { hasText: /Telefonbuch|Phonebook/ }).evaluate((e) => e.scrollIntoView({ block: 'start' })); await wait(300)

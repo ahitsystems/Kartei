@@ -59,10 +59,10 @@ class PhonebookTests(TestCase):
         self.assertTrue(r.content.startswith("\ufeff".encode()))
         rows = [line.split('";"') for line in text.strip().split("\r\n")]
         rows = [[c.strip('"') for c in row] for row in rows]
-        self.assertIn(["Koch,Jonas (Telefon)", "+49511123123217", "ACME GmbH · Telefon"], rows)
-        self.assertIn(["Koch,Jonas (Mobil)", "+491609997381", "ACME GmbH · Mobil"], rows)
-        self.assertIn(["Koch,Jonas", "0511777", "Telefon"], rows)  # one number: no label in the name
-        self.assertIn(["ACME GmbH", "05111231232", "Zentrale"], rows)
+        self.assertIn(["Koch,Jonas (Telefon)", "+49511123123217", "ACME GmbH · Telefon", "Show"], rows)
+        self.assertIn(["Koch,Jonas (Mobil)", "+491609997381", "ACME GmbH · Mobil", "Show"], rows)
+        self.assertIn(["Koch,Jonas", "+49511777", "Telefon", "Show"], rows)  # one number: no label; canonical
+        self.assertIn(["ACME GmbH", "+495111231232", "Zentrale", "Show"], rows)
         names = [row[0] for row in rows]
         self.assertEqual(len(names), len(set(names)))  # Swyx needs unique names
         self.assertTrue(all(" " not in row[1] for row in rows))  # no blanks in numbers

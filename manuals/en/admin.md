@@ -735,9 +735,13 @@ The list shows each profile with *Format*, *Target file*, *Schedule* and *Last r
    - *Only entries with field* and *Values*: optional filter on a select field, e.g. only contacts with a certain keyword.
    - *Export enabled*: automatic exports only run when this is ticked.
 3. **Columns:** *Column* adds an empty column, *Add all fields* adds one column per field. For each column, set the *Column header*, the *Value for people* and the *Value for companies*. Sources are core fields, fields and computed values (*UID*, *Legacy ID*, *Legacy ID, else UID*, *Display name*, *Company name (of person)*, *Type (person/company)*, *Created at*, *Changed at*). The `“”` button switches a column to *Fixed text*. Drag the handle to change the order.
+   - *One row per value* (branch icon): the column gets several sources, e.g. *Phone* and *Mobile*. Kartei then writes one row per filled source, in the given order; contacts without any value are left out. At most one such column per profile.
+   - *Name column* (tag icon): the source's *suffix* is appended here, e.g. " (Mobile)", so that every row has a unique name. If a name still occurs more than once, the export runs and its status gives the number of rows with a duplicate name.
 4. **Format options:** see below.
 5. *Preview* shows the first 20 rows and the total row count.
 6. *Save*.
+
+*Save as file* saves the profile as a JSON file to share it. *Import profile* in the list opens such a file in the editor; the profile is created when you *Save*. The target file is put below your own export directory, and the filter field is matched by its key. If a field a column uses doesn't exist here, *Save* names the invalid source.
 
 ![Export editor](../img/en/settings-export-editor.png)
 
@@ -757,7 +761,23 @@ The list shows each profile with *Format*, *Target file*, *Schedule* and *Last r
 | *Date format*, *Decimal separator* | `31.12.2026`, `1234,56` |
 | *Yes / No as* | `Ja` / `Nein` |
 | *Write header row* | on |
+| *Phone numbers* | *as stored* or *canonical*: `+49 511 1000-12` becomes `+49511100012` (the format phone systems use). Applies to fields of type phone. Numbers that aren't international (e.g. extensions) are written unchanged; the status gives their number. |
 | *Protect against spreadsheet formulas* | on: values Excel would run as a formula (starting with `=`, `@`, or `+`/`-` followed by text) get a leading `'`. Phone numbers and numbers stay as they are. Switch off only if a program reads the file and needs the raw values. In Excel exports, formulas are always written as text. |
+
+### Example: phonebook for a phone system (Swyx)
+
+Swyx imports a CSV file into its global phonebook with one number per row and unique names, e.g. `"Mustermann, Max";"+4923112345";"Production planning";"Show"`. A matching CSV profile:
+
+| Column | People | Companies |
+|---|---|---|
+| Name (*name column*) | *Display name* | *Name* |
+| Number (*one row per value*) | *Phone*, then *Mobile* with suffix " (Mobile)" | *Main phone* |
+| Description | *Department* | (empty) |
+| Show | Fixed text `Show` | Fixed text `Show` |
+
+For an occasional import by hand, the ready-made phonebook `…/phonebook/swyx.csv` is enough (see [Phonebook for desk phones](#phonebook)); the export profile is for a file Kartei writes regularly, with your own columns and filters.
+
+Also set *Quoting: always*, *Write header row* off and *Phone numbers: canonical*. People who are Swyx users themselves can be left out with *Only entries with field*. Kartei only writes the file; you import it with the Swyx wizard *Import phonebook*.
 
 ### Excel options
 
@@ -924,7 +944,7 @@ Desk phones load the contacts as their *remote phonebook*, and phone systems ask
 
 All three accept `?q=` with a name, company or number part. Without it the whole phonebook is sent; with tens of thousands of contacts that's several MB, too much for most phones: use the search URL then. Phones that read LDAP instead (e.g. Gigaset) can use the [Active Directory sync](#active-directory).
 
-**SwyxWare.** Swyx shows caller names from its *Global Phonebook*, on every SwyxIt! client and Swyx phone. `swyx.csv` is the phonebook in Swyx's import format: one line per number (`"Name";"Number";"Description"`, all quoted, numbers without blanks), names in Swyx style (`Muster,Erika`) and unique, as Swyx requires (with the number's label for contacts with several numbers, e.g. `Muster,Erika (Mobil)`); the description holds company and label. Download it in the browser with the phonebook login, then in *Swyx Administration → Global Phonebook → Import* choose the file and the update mode *Update existing entry*. Choose *Delete existing entries* only if the Global Phonebook holds nothing but Kartei's contacts. The file is UTF-8; for an older SwyxWare that shows umlauts wrongly, use `swyx.csv?charset=windows-1252`. `?q=` works here too, e.g. for one company. Swyx offers no documented automatic import, so repeat the import after larger changes.
+**SwyxWare.** Swyx shows caller names from its *Global Phonebook*, on every SwyxIt! client and Swyx phone. `swyx.csv` is the phonebook in Swyx's import format: one line per number (`"Name";"Number";"Description";"Show"`, all quoted, numbers in canonical format like `+49511100012`; extensions without an area code stay as they are), names in Swyx style (`Muster,Erika`) and unique, as Swyx requires (with the number's label for contacts with several numbers, e.g. `Muster,Erika (Mobil)`); the description holds company and label. Download it in the browser with the phonebook login, then in *Swyx Administration → Global Phonebook → Import* choose the file and the update mode *Update existing entry*. Choose *Delete existing entries* only if the Global Phonebook holds nothing but Kartei's contacts. The file is UTF-8; for an older SwyxWare that shows umlauts wrongly, use `swyx.csv?charset=windows-1252`. `?q=` works here too, e.g. for one company. Swyx offers no documented automatic import, so repeat the import after larger changes. If the file should be written to a directory regularly, have its own columns or leave contacts out (e.g. Swyx users), create an export profile instead, see [Exports](#exports), example *Phonebook for a phone system (Swyx)*.
 
 **Number lookup** for phone systems (3CX, Starface, Asterisk …): `GET /phonebook/lookup?number=+495111000` with the same login returns `Name · Company` as text, or with `&format=json` `{"found": true, "name", "company", "kind", "uid"}`. Unknown numbers give `404`. Numbers are compared in any notation (`+49…`, `0049…`, `0…`); if the exact number is unknown, the longest stored number it starts with wins, so an unknown extension still shows the company. An unencoded `+` in the URL is understood too.
 

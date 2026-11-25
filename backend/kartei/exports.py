@@ -15,7 +15,8 @@ from django.conf import settings as dj_settings
 from django.utils import timezone
 
 from .msg import msg
-from .models import FieldDef, Record, ref_names
+from .models import FieldDef, Record, Settings, ref_names
+from .validation import canonical
 
 log = logging.getLogger(__name__)
 EXPORT_ROOT = os.environ.get("EXPORT_ROOT", str(Path(dj_settings.BASE_DIR).parent / "export_out"))
@@ -23,6 +24,7 @@ CORE = ["first_name", "last_name", "name"]
 CALC = ["uid", "legacy_id", "legacy_or_uid", "display_name", "company_name", "kind", "created_at", "updated_at"]
 QUOTING = {"minimal": csv.QUOTE_MINIMAL, "all": csv.QUOTE_ALL, "nonnumeric": csv.QUOTE_NONNUMERIC}
 ENCODINGS = ["utf-8", "utf-8-sig", "cp1252"]
+PHONE_FORMATS = ("stored", "canonical")
 
 
 class GuardError(Exception):
@@ -61,6 +63,12 @@ def validate_profile(p, check_path=True):
                 p.format == "xlsx" and not p.path.lower().endswith(".xlsx"):
             errors["path"] = "wrong_extension"
     keys = set(FieldDef.objects.values_list("key", flat=True))
+
+    def bad_source(src):
+        kind, _, arg = src.partition(":")
+        return src and not ((kind == "core" and arg in CORE) or (kind == "calc" and arg in CALC)
+                            or (kind == "field" and arg in keys) or kind == "const")
+
     if not isinstance(p.columns, list) or not p.columns:
         errors["columns"] = "required"
     else:
@@ -68,17 +76,24 @@ def validate_profile(p, check_path=True):
             if not isinstance(c, dict) or not str(c.get("header", "")).strip():
                 errors["columns"] = "invalid"
                 break
-            for side in ("person", "company"):
-                src = c.get(side) or ""
-                kind, _, arg = src.partition(":")
-                if src and not ((kind == "core" and arg in CORE) or (kind == "calc" and arg in CALC)
-                                or (kind == "field" and arg in keys) or kind == "const"):
-                    errors["columns"] = f"invalid_source:{src}"
+            split = c.get("split")
+            if split is not None and not (isinstance(split, list) and split and all(
+                    isinstance(s, dict) and isinstance(s.get("suffix", ""), str) for s in split)):
+                errors["columns"] = "invalid"
+                break
+            for part in [c, *(split or [])]:
+                for side in ("person", "company"):
+                    if bad_source(src := part.get(side) or ""):
+                        errors["columns"] = f"invalid_source:{src}"
+        if "columns" not in errors and sum(1 for c in p.columns if c.get("split")) > 1:
+            errors["columns"] = "one_split_column"
+        elif "columns" not in errors and sum(1 for c in p.columns if c.get("suffix_target")) > 1:
+            errors["columns"] = "one_name_column"
     o = p.effective_options()
     if p.format == "csv":
         if len(o["delimiter"]) != 1 or len(o["quotechar"]) != 1 or o["quoting"] not in QUOTING \
                 or o["encoding"] not in ENCODINGS or o["line_ending"] not in ("crlf", "lf") \
-                or o["newlines"] not in ("keep", "space"):
+                or o["newlines"] not in ("keep", "space") or o.get("phone_format", "stored") not in PHONE_FORMATS:
             errors["options"] = "invalid"
     if not isinstance(p.filter_values, list):
         errors["filter_values"] = "invalid"
@@ -145,18 +160,47 @@ def _typed(value, src, fields, names):
     return value
 
 
-def build_rows(p):
-    """-> (header, rows) with typed cell values."""
+def build_rows(p, stats=None):
+    """-> (header, rows) with typed cell values. A column with "split" (a list of {person, company, suffix}) writes one
+    row per non-empty part; the part's suffix goes onto the column marked "suffix_target" (unique names for a phone
+    system). stats (dict) receives "not_canonical" and "duplicate_names"."""
     fields = {f.key: f for f in FieldDef.objects.all()}
     names = ref_names()
+    o = p.effective_options()
+    cc = Settings.get().phone_country_code if p.format == "csv" and o.get("phone_format") == "canonical" else None
+    stats = {} if stats is None else stats
+    stats.update(not_canonical=0, duplicate_names=0)
+
+    def cell(r, src):
+        v = _typed(resolve(r, src, fields), src, fields, names)
+        kind, _, arg = src.partition(":")
+        if cc is not None and v and isinstance(v, str) and kind == "field" and fields[arg].type == "phone":
+            if (n := canonical(v, cc)) is None:
+                stats["not_canonical"] += 1
+                return v
+            return n
+        return v
+
     header = [c["header"] for c in p.columns]
+    split = next((i for i, c in enumerate(p.columns) if c.get("split")), None)
+    target = next((i for i, c in enumerate(p.columns) if c.get("suffix_target")), None)
     rows = []
     for r in _records(p):
-        row = []
-        for c in p.columns:
-            src = c.get(r.kind) or ""
-            row.append(_typed(resolve(r, src, fields), src, fields, names))
-        rows.append(row)
+        row = [None if i == split else cell(r, c.get(r.kind) or "") for i, c in enumerate(p.columns)]
+        if split is None:
+            rows.append(row)
+            continue
+        for part in p.columns[split]["split"]:
+            if (v := cell(r, part.get(r.kind) or "")) in (None, "", []):
+                continue  # no number of this kind; a contact without any is left out
+            out = list(row)
+            out[split] = v
+            if target is not None and part.get("suffix"):
+                out[target] = f"{out[target] or ''}{part['suffix']}"
+            rows.append(out)
+    if target is not None:  # a phone system skips, overwrites or renames entries whose name it already has
+        seen = [str(r[target] or "").casefold() for r in rows]
+        stats["duplicate_names"] = len(seen) - len(set(seen))
     return header, rows
 
 
@@ -311,7 +355,8 @@ def run(p, force=False, user=None):
     try:
         if errors := validate_profile(p):
             raise GuardError(msg("export_invalid", fields=", ".join(errors)))
-        header, rows = build_rows(p)
+        stats = {}
+        header, rows = build_rows(p, stats)
         o = p.effective_options()
         digest = hashlib.sha256(json.dumps([p.format, o, header, [[_jsonable(v) for v in r] for r in rows]],
                                            default=str).encode()).hexdigest()
@@ -323,6 +368,10 @@ def run(p, force=False, user=None):
             atomic_write(path, data)
             lossy = lossy_values(header, rows, o) if p.format == "csv" else 0
             text = msg("export_rows_lossy", n=len(rows), lossy=lossy, encoding=o["encoding"]) if lossy else msg("export_rows", n=len(rows))
+            if stats["not_canonical"]:
+                text += "\n" + msg("export_not_canonical", n=stats["not_canonical"])
+            if stats["duplicate_names"]:
+                text += "\n" + msg("export_duplicate_names", n=stats["duplicate_names"])
             p.last_status, p.last_message, p.last_rows, p.last_hash = "ok", text, len(rows), digest
     except (GuardError, OSError) as e:
         log.error("export %s failed: %s", p.name, e)

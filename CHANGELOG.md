@@ -4,6 +4,12 @@ All notable changes to Kartei are listed here. The format follows [Keep a Change
 
 ## [Unreleased]
 
+### Added
+
+- **Exports, phonebooks for phone systems:** a column can write *one row per value*, e.g. one row each for phone and mobile, with a suffix per source (" (Mobil)") on the *name column*. The new CSV option *Phone numbers: canonical* writes `+49511100012` instead of `+49 511 1000-12`. The export status reports numbers that aren't international and rows with duplicate names, which a phone system like Swyx would skip or overwrite. The manual has an example profile for Swyx.
+- **Phonebook `swyx.csv`:** every line has the fourth column `"Show"` from Swyx's import format, and numbers are written in canonical format (`+49511100012`); before, a number stored nationally (`0511 777`) was written as `0511777`.
+- **Exports, sharing profiles:** *Save as file* saves an export profile as JSON, and *Import profile* opens such a file in the editor (filter field matched by key, target file below the local export directory).
+
 ## [0.8.5-beta] – 2026-11-19
 
 Fixes from a second internal security audit (nothing critical; one medium finding, the rest low):

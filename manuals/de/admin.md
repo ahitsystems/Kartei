@@ -735,9 +735,13 @@ Die Liste zeigt jedes Profil mit *Format*, *Zieldatei*, *Ausführung* und *Letzt
    - *Nur Einträge mit Feld* und *Werte*: optionaler Filter auf ein Auswahlfeld, z. B. nur Kontakte mit einem bestimmten Schlagwort.
    - *Export aktiv*: Automatische Exporte laufen nur mit diesem Haken.
 3. **Spalten:** *Spalte* fügt eine leere Spalte hinzu, *Alle Felder hinzufügen* eine Spalte pro Feld. Leg für jede Spalte *Spaltenüberschrift*, *Wert bei Personen* und *Wert bei Firmen* fest. Quellen sind Stammfelder, Felder und berechnete Werte (*UID*, *Alt-ID*, *Alt-ID, sonst UID*, *Anzeigename*, *Firmenname (der Person)*, *Typ (person/company)*, *Angelegt am*, *Geändert am*). Die Schaltfläche `“”` schaltet eine Spalte auf *Fester Text* um. Die Reihenfolge änderst du am Griff.
+   - *Eine Zeile pro Wert* (Symbol mit Verzweigung): Die Spalte bekommt mehrere Quellen, z. B. *Telefon* und *Mobil*. Kartei schreibt dann für jede gefüllte Quelle eine eigene Zeile, in der angegebenen Reihenfolge; Kontakte ohne jeden Wert entfallen. Höchstens eine solche Spalte pro Profil.
+   - *Namensspalte* (Etikett-Symbol): Hier wird der *Zusatz* der Quelle angehängt, z. B. „ (Mobil)“, damit jede Zeile einen eindeutigen Namen hat. Kommt ein Name trotzdem mehrfach vor, läuft der Export, und der Status nennt die Zahl der Zeilen mit doppeltem Namen.
 4. **Formatoptionen:** siehe unten.
 5. *Vorschau* zeigt die ersten 20 Zeilen und die Gesamtzahl.
 6. *Speichern*.
+
+*Als Datei* speichert das Profil als JSON-Datei, um es weiterzugeben. *Profil importieren* in der Liste öffnet so eine Datei im Editor; angelegt wird das Profil erst mit *Speichern*. Die Zieldatei wird unter das eigene Exportverzeichnis gelegt, das Filterfeld über seinen Schlüssel zugeordnet. Fehlt hier ein Feld, das eine Spalte nutzt, nennt *Speichern* die ungültige Quelle.
 
 ![Export-Editor](../img/de/settings-export-editor.png)
 
@@ -757,7 +761,23 @@ Die Liste zeigt jedes Profil mit *Format*, *Zieldatei*, *Ausführung* und *Letzt
 | *Datumsformat*, *Dezimaltrenner* | `31.12.2026`, `1234,56` |
 | *Ja / Nein als* | `Ja` / `Nein` |
 | *Kopfzeile schreiben* | an |
+| *Telefonnummern* | *wie gespeichert* oder *kanonisch*: `+49 511 1000-12` wird zu `+49511100012` (Format für Telefonanlagen). Gilt für Felder vom Typ Telefon. Nicht internationale Nummern (z. B. Durchwahlen) bleiben unverändert; der Status nennt ihre Zahl. |
 | *Vor Tabellen-Formeln schützen* | an: Werte, die Excel als Formel ausführen würde (beginnend mit `=`, `@` oder `+`/`-` gefolgt von Text), bekommen ein vorangestelltes `'`. Telefonnummern und Zahlen bleiben unverändert. Nur ausschalten, wenn ein Programm die Datei liest und die Rohwerte braucht. In Excel-Exporten werden Formeln immer als Text geschrieben. |
+
+### Beispiel: Telefonbuch für eine Telefonanlage (Swyx)
+
+Swyx importiert ins globale Telefonbuch eine CSV-Datei mit einer Nummer pro Zeile und eindeutigen Namen, z. B. `"Mustermann, Max";"+4923112345";"Arbeitsvorbereitung";"Show"`. Ein passendes CSV-Profil:
+
+| Spalte | Personen | Firmen |
+|---|---|---|
+| Name (*Namensspalte*) | *Anzeigename* | *Name* |
+| Nummer (*Eine Zeile pro Wert*) | *Telefon*, dann *Mobil* mit Zusatz „ (Mobil)“ | *Telefon Zentrale* |
+| Beschreibung | *Abteilung* | (leer) |
+| Anzeige | Fester Text `Show` | Fester Text `Show` |
+
+Für einen gelegentlichen Import von Hand reicht das fertige Telefonbuch `…/phonebook/swyx.csv` (siehe [Telefonbuch für Tischtelefone](#phonebook)); das Exportprofil ist für eine Datei, die Kartei regelmäßig schreibt, mit eigenen Spalten und Filtern.
+
+Dazu *Anführungszeichen: immer*, *Kopfzeile schreiben* aus und *Telefonnummern: kanonisch*. Wer selbst Swyx-Benutzer ist, lässt sich mit *Nur Einträge mit Feld* ausschließen. Kartei schreibt nur die Datei; importiert wird sie im Swyx-Assistenten *Telefonbuch importieren*.
 
 ### Excel-Optionen
 
@@ -924,7 +944,7 @@ Tischtelefone laden die Kontakte als *Online-Telefonbuch* (Remote Phonebook), un
 
 Alle drei verstehen `?q=` mit einem Teil von Name, Firma oder Nummer. Ohne geht das ganze Telefonbuch hinaus; bei Zehntausenden Kontakten sind das mehrere MB, zu viel für die meisten Telefone: dann die Such-Adresse nutzen. Telefone, die stattdessen LDAP lesen (z. B. Gigaset), können den [Active-Directory-Sync](#active-directory) nutzen.
 
-**SwyxWare.** Swyx zeigt Anrufernamen aus seinem *Globalen Telefonbuch*, auf jedem SwyxIt!-Client und Swyx-Telefon. `swyx.csv` ist das Telefonbuch im Importformat von Swyx: eine Zeile pro Nummer (`"Name";"Nummer";"Beschreibung"`, alles in Anführungszeichen, Nummern ohne Leerzeichen), Namen im Swyx-Stil (`Muster,Erika`) und eindeutig, wie Swyx es verlangt (bei mehreren Nummern mit deren Bezeichnung, z. B. `Muster,Erika (Mobil)`); die Beschreibung enthält Firma und Bezeichnung. Im Browser mit der Telefonbuch-Anmeldung herunterladen, dann in der Swyx Administration beim Globalen Telefonbuch den Import starten, die Datei wählen und bestehende Einträge aktualisieren lassen. Alle vorhandenen Einträge vor dem Import zu löschen, nur wählen, wenn das Globale Telefonbuch nichts außer den Kartei-Kontakten enthält. Die Datei ist UTF-8; zeigt eine ältere SwyxWare Umlaute falsch an, `swyx.csv?charset=windows-1252` verwenden. `?q=` geht auch hier, z. B. für eine Firma. Einen dokumentierten automatischen Import bietet Swyx nicht; nach größeren Änderungen den Import wiederholen.
+**SwyxWare.** Swyx zeigt Anrufernamen aus seinem *Globalen Telefonbuch*, auf jedem SwyxIt!-Client und Swyx-Telefon. `swyx.csv` ist das Telefonbuch im Importformat von Swyx: eine Zeile pro Nummer (`"Name";"Nummer";"Beschreibung";"Show"`, alles in Anführungszeichen, Nummern im kanonischen Format wie `+49511100012`; Durchwahlen ohne Vorwahl bleiben, wie sie sind), Namen im Swyx-Stil (`Muster,Erika`) und eindeutig, wie Swyx es verlangt (bei mehreren Nummern mit deren Bezeichnung, z. B. `Muster,Erika (Mobil)`); die Beschreibung enthält Firma und Bezeichnung. Im Browser mit der Telefonbuch-Anmeldung herunterladen, dann in der Swyx Administration beim Globalen Telefonbuch den Import starten, die Datei wählen und bestehende Einträge aktualisieren lassen. Alle vorhandenen Einträge vor dem Import zu löschen, nur wählen, wenn das Globale Telefonbuch nichts außer den Kartei-Kontakten enthält. Die Datei ist UTF-8; zeigt eine ältere SwyxWare Umlaute falsch an, `swyx.csv?charset=windows-1252` verwenden. `?q=` geht auch hier, z. B. für eine Firma. Einen dokumentierten automatischen Import bietet Swyx nicht; nach größeren Änderungen den Import wiederholen. Soll die Datei regelmäßig in ein Verzeichnis geschrieben werden, eigene Spalten haben oder Kontakte ausschließen (z. B. Swyx-Benutzer), dafür ein Exportprofil anlegen, siehe [Exporte](#exporte), Beispiel *Telefonbuch für eine Telefonanlage (Swyx)*.
 
 **Rufnummernsuche** für Telefonanlagen (3CX, Starface, Asterisk …): `GET /phonebook/lookup?number=+495111000` mit derselben Anmeldung liefert `Name · Firma` als Text, mit `&format=json` `{"found": true, "name", "company", "kind", "uid"}`. Unbekannte Nummern ergeben `404`. Nummern werden in jeder Schreibweise verglichen (`+49…`, `0049…`, `0…`); ist die genaue Nummer unbekannt, gewinnt die längste gespeicherte Nummer, mit der sie beginnt – eine unbekannte Durchwahl zeigt so noch die Firma. Ein nicht kodiertes `+` in der Adresse wird auch verstanden.
 

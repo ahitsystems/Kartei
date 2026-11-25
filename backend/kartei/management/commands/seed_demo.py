@@ -168,6 +168,16 @@ class Command(BaseCommand):
             ("E-Mail", "field:email", "field:company_email"), ("Ort", "field:work_city", "field:work_city")]]
         for name, fmt, file in [("Kontakte (CSV)", "csv", "kontakte.csv"), ("Kontakte (Excel)", "xlsx", "kontakte.xlsx")]:
             ExportProfile.objects.create(name=name, format=fmt, enabled=False, path=f"{exports.EXPORT_ROOT}/{file}", columns=cols)
+        # the phonebook example from the manual: one row per number, unique names, canonical numbers (Swyx)
+        ExportProfile.objects.create(
+            name="Telefonbuch Swyx", enabled=False, schedule="manual", path=f"{exports.EXPORT_ROOT}/swyx.csv",
+            options={"quoting": "all", "header": False, "encoding": "utf-8", "phone_format": "canonical"}, columns=[
+                {"header": "Name", "person": "calc:display_name", "company": "core:name", "suffix_target": True},
+                {"header": "Nummer", "person": "", "company": "", "split": [
+                    {"person": "field:phone_work", "company": "field:company_phone", "suffix": ""},
+                    {"person": "field:mobile", "company": "", "suffix": " (Mobil)"}]},
+                {"header": "Beschreibung", "person": "field:department", "company": ""},
+                {"header": "Anzeige", "person": "const:Show", "company": "const:Show"}])
         Settings.objects.filter(pk=1).update(review_mode="rolling", review_interval_months=12)
         # a few contacts in the recycle bin, deleted by the maintainers over the last days
         for (first, last, job), (c, domain), who, days in zip(

@@ -22,6 +22,7 @@ from .batch import MIN_PREFIX, national
 from .models import FieldDef, Record, Settings
 from .vcard import XML_ILLEGAL
 from .net import client_ip
+from .validation import canonical
 
 DIAL = ("tel_work", "tel_custom", "tel_cell", "tel_home", "tel_assistant")  # no fax: a phone can't call one
 KIND = {"tel_cell": "Cell", "tel_home": "Home"}  # Grandstream's phone types; everything else is Work
@@ -137,9 +138,10 @@ def grandstream(items):
 
 def swyx(items):
     """SwyxWare's Global Phonebook import (Swyx Administration → Global Phonebook → Import): one line per number,
-    "Name";"Number";"Description", every field quoted. Names must be unique there, so a contact with several numbers
+    "Name";"Number";"Description";"Show", every field quoted, numbers canonical (+49511100012). Names must be unique there, so a contact with several numbers
     gets the number's label, and a name that is still taken the company, then a counter."""
     q = lambda v: '"' + str(v).replace('"', "'").replace("\r", " ").replace("\n", " ") + '"'
+    cc = Settings.get().phone_country_code
     taken, lines = set(), []
     for e in items:
         base = f"{e['last']},{e['first']}" if e["first"] else e["last"]  # "Schmidt,Eva" like Swyx's own entries
@@ -151,7 +153,8 @@ def swyx(items):
             while unique in taken:
                 unique, i = f"{name} {i}", i + 1
             taken.add(unique)
-            lines.append(";".join(q(x) for x in (unique, _dial(n), " · ".join(filter(None, (e["company"], label))))))
+            number = canonical(n, cc) or _dial(n)  # an extension stays as it is
+            lines.append(";".join(q(x) for x in (unique, number, " · ".join(filter(None, (e["company"], label))), "Show")))
     return "\r\n".join(lines) + "\r\n"
 
 

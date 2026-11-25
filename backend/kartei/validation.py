@@ -60,6 +60,12 @@ def normalize_phone(v, cc):
     return s
 
 
+def canonical(v, cc):
+    """'+49 511 1000-12' / '0511 1000-12' -> '+49511100012' (Swyx & co.); None if not international (an extension)."""
+    n = normalize_phone(v, cc)
+    return "+" + "".join(ch for ch in n if ch.isdigit()) if n.startswith("+") else None
+
+
 def clean_value(f, value, old=None, cc=None):
     """Return the normalized value or raise ValueError(code). Applies the field's admin-defined regex.
     `old` is the stored value: user fields may keep users that were deactivated since.
