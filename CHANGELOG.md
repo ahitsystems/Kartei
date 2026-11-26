@@ -4,6 +4,13 @@ All notable changes to Kartei are listed here. The format follows [Keep a Change
 
 ## [Unreleased]
 
+## [0.9.1-beta] – 2026-11-26
+
+New in this release:
+- **Dial links through a phone system:** an outside-line prefix (e.g. `0`) and a replacement for "+" (e.g. `00`) for clicks on phone numbers.
+
+Upgrading: pull the new images; migration 0021 adds the two settings (empty, so links stay as before until you set them).
+
 ### Added
 
 - **Dial links through a phone system:** under *Settings → General → Phone numbers*, an outside-line prefix (e.g. `0`) and a replacement for "+" (e.g. `00`) make clicks on phone numbers dial `tel:000495111234567` instead of `tel:+495111234567`. Extensions stay as they are; stored numbers, phonebooks and exports are unchanged. Migration 0021.
@@ -426,7 +433,8 @@ First public beta.
 - German and English, light and dark theme, installable as an app.
 - Images on the GitHub container registry, manuals as PDF, SBOMs and the OpenAPI description attached to the release.
 
-[Unreleased]: https://github.com/ahitsystems/Kartei/compare/v0.9.0-beta...HEAD
+[Unreleased]: https://github.com/ahitsystems/Kartei/compare/v0.9.1-beta...HEAD
+[0.9.1-beta]: https://github.com/ahitsystems/Kartei/compare/v0.9.0-beta...v0.9.1-beta
 [0.9.0-beta]: https://github.com/ahitsystems/Kartei/compare/v0.8.5-beta...v0.9.0-beta
 [0.8.5-beta]: https://github.com/ahitsystems/Kartei/compare/v0.8.4-beta...v0.8.5-beta
 [0.8.4-beta]: https://github.com/ahitsystems/Kartei/compare/v0.8.3-beta...v0.8.4-beta
