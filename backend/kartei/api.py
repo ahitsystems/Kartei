@@ -435,6 +435,7 @@ def bootstrap(request):
     s, users = Settings.get(), user_options()
     return JsonResponse({"cursor": now.isoformat(), "user": ser_user(request.user),
                          "default_language": s.default_language, "map_url": s.map_url, "print_logo": print_logo(s),
+                         "tel": {"outside": s.tel_outside, "plus": s.tel_plus},
                          "fields": [ser_field(f, users) for f in fields], "sections": sections_list(),
                          "records": records, **workflow(request),
                          **dashboard_prefs(request)})
@@ -458,6 +459,7 @@ def changes(request):
     changed = ser_records(Record.objects.filter(Q(updated_at__gte=cut) | Q(reviewed_at__gte=cut)), fields)
     return JsonResponse({
         "cursor": now.isoformat(), "user": ser_user(request.user), "default_language": s.default_language, "map_url": s.map_url, "print_logo": print_logo(s),
+        "tel": {"outside": s.tel_outside, "plus": s.tel_plus},
         "fields": [ser_field(f, users) for f in fields], "sections": sections_list(),
         "records": [r for r in changed if not r["deleted_at"]],
         "deleted": [r["uid"] for r in changed if r["deleted_at"]],
@@ -1738,7 +1740,7 @@ SETTINGS_ATTRS = ["default_language", "totp_required", "base_url", "trash_days",
                   "review_campaign_day", "smtp_host", "smtp_port", "smtp_security", "smtp_username", "smtp_from",
                   "review_remind_days", "proposal_notify", "proposal_notify_to",
                   "ad_enabled", "ad_ou", "ad_bind_dn", "ad_kinds", "ad_columns", "ad_max_shrink_percent"]
-SETTINGS_ATTRS += ["phone_normalize", "phone_country_code"]  # quality
+SETTINGS_ATTRS += ["phone_normalize", "phone_country_code", "tel_outside", "tel_plus"]  # quality, tel: links
 SETTINGS_ATTRS += ["map_url", "ldap_users_max_deactivate_percent", "print_logo_mode"]
 SETTINGS_ATTRS += ["backup_enabled", "backup_time", "backup_keep_days"]
 SETTINGS_ATTRS += ["retention_months", "phonebook_enabled", "phonebook_username", "phonebook_allowlist", "audit_signin_days", "monitoring_allowlist", "syslog_enabled", "syslog_host", "syslog_port",
@@ -1837,6 +1839,10 @@ def settings_put(request):
         errors["map_url"] = "map_url_invalid"
     if not re.fullmatch(r"\+[1-9]\d{0,3}", str(s.phone_country_code)):
         errors["phone_country_code"] = "invalid"
+    for a in ("tel_outside", "tel_plus"):
+        setattr(s, a, str(getattr(s, a) or "").strip())
+        if not re.fullmatch(r"[\d*#]{0,4}", getattr(s, a)):
+            errors[a] = "invalid"
     if s.export_interval_minutes == 0:
         errors["export_interval_minutes"] = "too_small"
     if s.ldap_user_filter and "%(user)s" not in s.ldap_user_filter:

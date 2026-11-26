@@ -197,6 +197,9 @@ class Settings(models.Model):
 
     phone_normalize = models.BooleanField(default=True)  # phone fields are saved in international form
     phone_country_code = models.CharField(max_length=5, default="+49")  # for national numbers (leading 0)
+    # tel: links for a phone system: outside-line prefix for external numbers and the digits that replace "+"
+    tel_outside = models.CharField(max_length=4, blank=True, default="")
+    tel_plus = models.CharField(max_length=4, blank=True, default="")
 
     # email: templates per email and language (empty = default, see reviews.DEFAULT_TEMPLATES) and the transport
     mail_templates = models.JSONField(default=dict, blank=True)  # {"review"|"reminder"|"proposals": {"de"|"en": {"subject", "body"}}}

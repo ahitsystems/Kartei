@@ -17,6 +17,7 @@
   import { hasOrg, managerField } from '../lib/orgchart'
   import { copyText, toast } from '../lib/toast.svelte'
   import { hasEditDraft } from '../lib/drafts'
+  import { telHref } from '../lib/tel'
   import { confirmDialog } from '../lib/confirm.svelte'
   import type { BatchItem, Field, Proposal, Rec } from '../lib/types'
 
@@ -233,7 +234,7 @@
                 <dt>{L(f.label)}{#if L(f.help)}<span class="info" title={L(f.help)}><Info size={11} /></span>{/if}</dt>
                 <dd>
                   {#if f.type === 'phone'}
-                    <a href="tel:{String(v).replace(/[^\d+]/g, '')}" class="tabular"><Phone size={13} />{v}</a>
+                    <a href={telHref(v, store.tel)} class="tabular"><Phone size={13} />{v}</a>
                     <button class="copy" onclick={() => copy(v)} aria-label={t('view.copy')}><Copy size={13} /></button>
                   {:else if f.type === 'email'}
                     <a href="mailto:{v}"><Mail size={13} />{v}</a>

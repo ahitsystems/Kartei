@@ -1142,6 +1142,15 @@ Nummern, die vorher gespeichert wurden (z. B. nach dem Import), wandelst du so u
 
 ![Ergebnis der Nummernprüfung](../img/de/settings-general-phones.png)
 
+#### Wählen über die Telefonanlage
+
+Ein Klick auf eine Telefonnummer öffnet einen `tel:`-Link, den das Softphone oder die Telefonanlage wählt. Braucht die Anlage eine Amtsholung oder versteht sie kein „+“, stellst du das hier ein:
+
+- *Amtsholung für Wählen-Links*, z. B. `0`: wird externen Nummern vorangestellt.
+- *„+“ ersetzen durch*, z. B. `00`.
+
+Mit beiden wird `+49 511 1234567` zu `tel:000495111234567`, eine national gespeicherte `0511 1234567` zu `tel:005111234567`. Durchwahlen ohne führende 0 bleiben unverändert, damit interne Anrufe weiter funktionieren. Erlaubt sind bis zu vier Ziffern, `*` und `#`. Beide leer (Standard): Die Nummer wird gewählt, wie sie gespeichert ist. Die Einstellung gilt für alle Benutzer und nur für die Links; gespeicherte Nummern, CardDAV, Telefonbücher und Exporte bleiben unverändert.
+
 ## Datenqualität und Dubletten
 
 Admins und Bearbeiter finden *Datenqualität* und *Dubletten* im Benutzermenü und auf der Startseite:

@@ -4,6 +4,10 @@ All notable changes to Kartei are listed here. The format follows [Keep a Change
 
 ## [Unreleased]
 
+### Added
+
+- **Dial links through a phone system:** under *Settings → General → Phone numbers*, an outside-line prefix (e.g. `0`) and a replacement for "+" (e.g. `00`) make clicks on phone numbers dial `tel:000495111234567` instead of `tel:+495111234567`. Extensions stay as they are; stored numbers, phonebooks and exports are unchanged. Migration 0021.
+
 ## [0.9.0-beta] – 2026-11-25
 
 New in this release:

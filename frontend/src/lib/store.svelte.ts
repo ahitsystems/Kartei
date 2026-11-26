@@ -4,6 +4,7 @@ import { setLang, t } from './i18n.svelte'
 import { clearDrafts } from './drafts'
 import { disablePush, startPush } from './push'
 import { buildIndex, displayName, type Indexed, type ListSort, type NameOrder } from './search'
+import type { TelPrefix } from './tel'
 import { RANK, type Field, type Kind, type Section, type Lang, type ListState, type Proposal, type Rec, type Review,
          type PushKind, type SavedFilter, type User } from './types'
 
@@ -20,6 +21,7 @@ interface Snapshot {
   user: User
   defaultLang: Lang
   mapUrl?: string
+  tel?: TelPrefix
   printLogo?: string
   fields: Field[]
   sections?: Section[]
@@ -39,6 +41,7 @@ class Store {
   defaultLang = $state<Lang>('de')
   /** address link template from the settings ({address}); '' = no link */
   mapUrl = $state('')
+  tel = $state<TelPrefix>({ outside: '', plus: '' })
   /** logo on the phone list: "kartei", "none", or the version of the organisation's own (/api/print-logo?v=…) */
   printLogo = $state('kartei')
   /** "Sign in with Microsoft" is offered (from the session) */
@@ -164,6 +167,7 @@ class Store {
     this.user = s.user
     this.defaultLang = s.defaultLang
     this.mapUrl = s.mapUrl ?? ''
+    this.tel = s.tel ?? { outside: '', plus: '' }
     this.printLogo = s.printLogo ?? 'kartei'
     this.fields = s.fields
     this.sections = s.sections ?? []
@@ -262,6 +266,7 @@ class Store {
           this.user = ch.user
           this.defaultLang = ch.default_language
           this.mapUrl = ch.map_url ?? ''
+          this.tel = ch.tel ?? { outside: '', plus: '' }
           this.printLogo = ch.print_logo ?? 'kartei'
           this.cursor = ch.cursor
           this.applyLang()
@@ -276,6 +281,7 @@ class Store {
       this.user = b.user
       this.defaultLang = b.default_language
       this.mapUrl = b.map_url ?? ''
+      this.tel = b.tel ?? { outside: '', plus: '' }
       this.printLogo = b.print_logo ?? 'kartei'
       this.fields = b.fields
       this.sections = b.sections ?? []
@@ -317,7 +323,7 @@ class Store {
       if (!this.user) return
       const snap: Snapshot = {
         username: this.user.username, savedAt: Date.now(), cursor: this.cursor, user: $state.snapshot(this.user) as User,
-        defaultLang: this.defaultLang, mapUrl: this.mapUrl, printLogo: this.printLogo, fields: this.fields, sections: this.sections, records: this.records,
+        defaultLang: this.defaultLang, mapUrl: this.mapUrl, tel: this.tel, printLogo: this.printLogo, fields: this.fields, sections: this.sections, records: this.records,
         reviews: this.reviews, proposals: this.proposals,
         recent: this.recent, favorites: this.favorites, filters: this.filters,
       }

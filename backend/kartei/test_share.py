@@ -1,3 +1,7 @@
+from urllib.parse import quote
+
+from django.utils import timezone
+
 from .models import FieldDef, Record, Settings
 from .tests import ApiTestBase
 
@@ -37,6 +41,17 @@ class ShareTests(ApiTestBase):
         self.j("put", "/api/admin/settings", {"map_url": ""})  # no link
         self.as_("read")
         self.assertEqual(self.j("get", "/api/bootstrap")["map_url"], "")
+
+    def test_tel_link_setting(self):
+        self.as_("read")
+        self.assertEqual(self.j("get", "/api/bootstrap")["tel"], {"outside": "", "plus": ""})  # plain tel: links
+        self.as_("admin")
+        r = self.j("put", "/api/admin/settings", {"tel_outside": "0,", "tel_plus": "+"}, status=400)
+        self.assertEqual(r["fields"], {"tel_outside": "invalid", "tel_plus": "invalid"})
+        self.j("put", "/api/admin/settings", {"tel_outside": " 0 ", "tel_plus": "00"})
+        self.as_("read")
+        self.assertEqual(self.j("get", "/api/bootstrap")["tel"], {"outside": "0", "plus": "00"})
+        self.assertEqual(self.j("get", "/api/changes?since=" + quote(timezone.now().isoformat()))["tel"]["outside"], "0")
 
     def test_android_qr_puts_multi_line_text_on_one_line(self):
         FieldDef.objects.filter(key="description").update(vcard="note")

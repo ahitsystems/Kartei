@@ -48,7 +48,7 @@ const ATTR: Record<string, Record<string, string>> = {
     proposal_notify: 'review.proposal_notify', proposal_notify_to: 'review.proposal_to',
     ad_enabled: 'ad.enabled', ad_ou: 'ad.ou', ad_bind_dn: 'ad.bind_dn', ad_bind_password_enc: 'ad.bind_pw',
     ad_kinds: 'exports.kinds', ad_columns: 'ad.mapping', ad_max_shrink_percent: 'ad.guard',
-    phone_normalize: 'phone.normalize', phone_country_code: 'phone.country_code',
+    phone_normalize: 'phone.normalize', phone_country_code: 'phone.country_code', tel_outside: 'phone.tel_outside', tel_plus: 'phone.tel_plus',
     mail_templates: 'audit.attr.mail_templates', mail_transport: 'audit.attr.mail_transport', mail_graph_sender: 'audit.attr.mail_graph_sender',
     map_url: 'general.map_url', ldap_users_max_deactivate_percent: 'ldap.import_guard', audit_signin_days: 'mon.retention', backup_enabled: 'backup.enabled', backup_time: 'backup.time', backup_keep_days: 'backup.keep', monitoring_allowlist: 'mon.allowlist', monitoring_token_hash: 'mon.token',
     syslog_enabled: 'mon.syslog_enabled', syslog_host: 'mon.syslog_host', syslog_port: 'mon.syslog_port',

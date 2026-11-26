@@ -7,6 +7,7 @@
   import { copyText, toast } from '../lib/toast.svelte'
   import Combobox from '../components/Combobox.svelte'
   import { dateTime, relTime } from '../lib/format'
+  import { telHref } from '../lib/tel'
 
   let { section }: { section: 'ldap' | 'sso' | 'carddav' | 'outlook' | 'review' | 'mail' | 'general' } = $props()
 
@@ -300,6 +301,15 @@
         <p class="hint">{t('phone.hint')}</p>
         {#if errors.phone_country_code}<div class="error-text">{terr(errors.phone_country_code)}</div>{/if}
       </div>
+      <div class="row2">
+        <div><label class="label" for="telo">{t('phone.tel_outside')}</label>
+          <input id="telo" class="input narrow" bind:value={s.tel_outside} placeholder="0" maxlength="4" />
+          {#if errors.tel_outside}<div class="error-text">{terr(errors.tel_outside)}</div>{/if}</div>
+        <div><label class="label" for="telp">{t('phone.tel_plus')}</label>
+          <input id="telp" class="input narrow" bind:value={s.tel_plus} placeholder="00" maxlength="4" />
+          {#if errors.tel_plus}<div class="error-text">{terr(errors.tel_plus)}</div>{/if}</div>
+      </div>
+      <p class="hint">{t('phone.tel_hint', { example: telHref(`${s.phone_country_code || '+49'} 511 1234567`, { outside: s.tel_outside ?? '', plus: s.tel_plus ?? '' }).slice(4) })}</p>
       <div class="test"><button type="button" class="btn" onclick={checkPhones}><Phone size={15} />{t('phone.check')}</button></div>
       {#if phoneRun}
         <div class="result info">

@@ -1142,6 +1142,15 @@ To convert numbers saved before (e.g. after the import):
 
 ![Result of the phone-number check](../img/en/settings-general-phones.png)
 
+#### Dialling through the phone system
+
+Clicking a phone number opens a `tel:` link that the softphone or phone system dials. If the phone system needs an outside-line prefix or doesn't understand "+", set it here:
+
+- *Outside line for dial links*, e.g. `0`: put in front of external numbers.
+- *Replace "+" with*, e.g. `00`.
+
+With both, `+49 511 1234567` becomes `tel:000495111234567`, and a number stored nationally, `0511 1234567`, becomes `tel:005111234567`. Extensions without a leading 0 stay as they are, so internal calls keep working. Up to four digits, `*` and `#` are allowed. Both empty (default): the number is dialled as stored. The setting applies to all users and only to the links; stored numbers, CardDAV, phonebooks and exports stay unchanged.
+
 ## Data quality and duplicates
 
 Admins and maintainers find *Data quality* and *Duplicates* in the user menu and on the dashboard:
