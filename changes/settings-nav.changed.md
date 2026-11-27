@@ -1,1 +1,0 @@
-- **Settings:** a navigation on the left in five groups (Basics, Sign-in, Distribution, Data, Operations) instead of 16 tabs in one row; settings open on *General*. On phones a list. Admin manual and its screenshots updated.
