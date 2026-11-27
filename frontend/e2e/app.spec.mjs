@@ -1012,7 +1012,7 @@ test.describe('offline', () => {
     // more than 24 hours since the last sync: a shared PC must not keep showing the last user's contacts
     await page.addInitScript(() => { const now = Date.now; Date.now = () => now() + 25 * 3600_000 })
     await page.reload()
-    await expect(page.getByRole('status')).toContainText("The server can't be reached")
+    await expect(page.getByRole('status')).toContainText('No connection to the server')
     await page.context().setOffline(false)
   })
 })

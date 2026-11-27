@@ -1,0 +1,1 @@
+- **Sign-in page without a connection:** the note no longer suggests that signing in would unlock data stored on the device. It says that signing in isn't possible without a connection, and that the contacts are only shown offline if the device synced in the last 24 hours.

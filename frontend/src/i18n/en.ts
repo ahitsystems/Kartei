@@ -19,7 +19,7 @@ export default {
   'top.search': 'Search: name, company, phone, email …',
   'top.new': 'New',
   'top.sync': 'Sync now',
-  'login.offline': "The server can't be reached. Without a connection, Kartei only shows data synced on this device in the last 24 hours, and there is none here. You can sign in once the server is reachable again.",
+  'login.offline': "No connection to the server – signing in isn't possible right now. Without a connection, Kartei only shows the contacts if this device synced in the last 24 hours.",
   'top.offline': 'Offline – showing cached data',
   'top.account': 'My account',
   'top.trash': 'Recycle bin',
