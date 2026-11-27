@@ -9,8 +9,24 @@ on:
 permissions: {}  # each job asks for what it needs
 
 jobs:
+  # only a commit on main whose CI passed is released; tagged too early (CI still running)? Re-run this workflow afterwards
+  ci-passed:
+    runs-on: ubuntu-26.04
+    permissions:
+      contents: read
+      actions: read
+    steps:
+      - env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          status=$(gh api "repos/$GITHUB_REPOSITORY/compare/main...$GITHUB_SHA" --jq .status)
+          [ "$status" = identical ] || [ "$status" = behind ] || { echo "::error::$GITHUB_SHA is not on main ($status)"; exit 1; }
+          ok=$(gh run list -R "$GITHUB_REPOSITORY" --workflow ci.yml --commit "$GITHUB_SHA" --status success --json databaseId --jq length)
+          [ "$ok" -gt 0 ] || { echo "::error::no successful CI run for $GITHUB_SHA"; exit 1; }
+
   # npm packages, Playwright and apt run here, without write access to the repository or the registry
   manuals:
+    needs: ci-passed
     runs-on: ubuntu-26.04
     permissions:
       contents: read
