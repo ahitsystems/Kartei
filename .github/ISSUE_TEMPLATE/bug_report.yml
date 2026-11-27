@@ -6,6 +6,7 @@ body:
     attributes:
       value: |
         Thanks for reporting! Please don't include real contact data, passwords, tokens or internal host names.
+        Security vulnerabilities: please report them privately (see the link on the previous page), not here.
   - type: textarea
     id: what
     attributes:
@@ -31,14 +32,16 @@ body:
         - Contacts (search, view, edit)
         - Reviews and proposals
         - Settings / fields
-        - Sign-in / LDAP
+        - Sign-in (local, LDAP, SSO/OIDC, SCIM, two-factor)
         - Outlook / Exchange sync
         - CardDAV / relay
         - Active Directory sync
         - Exports / import
         - REST API
+        - Phone view / app (PWA, offline)
         - Email
-        - Installation / Docker
+        - Backup / monitoring / syslog
+        - Installation / Docker / upgrade
         - Other
     validations:
       required: true
@@ -46,7 +49,7 @@ body:
     id: version
     attributes:
       label: Kartei version
-      description: The image tag or release, e.g. 0.1.0-beta
+      description: Shown at the bottom of the user menu, or the image tag, e.g. 0.10.0-beta
     validations:
       required: true
   - type: dropdown
@@ -63,5 +66,12 @@ body:
     id: logs
     attributes:
       label: Logs
-      description: Relevant lines from `docker compose logs web` or `docker compose logs exporter` (remove personal data).
+      description: Relevant lines from `docker compose logs web`, `docker compose logs exporter` or, for the relay, `docker compose -f compose.relay.yaml logs` (remove personal data).
       render: text
+  - type: checkboxes
+    id: privacy
+    attributes:
+      label: Privacy
+      options:
+        - label: This report contains no real contact data, passwords, tokens or internal host names.
+          required: true
