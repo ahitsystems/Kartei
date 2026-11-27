@@ -23,6 +23,11 @@ export default {
   'top.account': 'My account',
   'top.trash': 'Recycle bin',
   'top.settings': 'Settings',
+  'phoneview.toggle': 'Phone view',
+  'phoneview.calls': 'Recently dialled',
+  'phoneview.no_calls': 'Nothing dialled yet',
+  'phoneview.list': 'List for speed dial',
+  'phoneview.no_phone': 'No phone number',
   'top.logout': 'Sign out',
 
   'kind.person': 'Person',

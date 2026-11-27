@@ -1151,6 +1151,8 @@ Clicking a phone number opens a `tel:` link that the softphone or phone system d
 
 With both, `+49 511 1234567` becomes `tel:000495111234567`, and a number stored nationally, `0511 1234567`, becomes `tel:005111234567`. Extensions without a leading 0 stay as they are, so internal calls keep working. Up to four digits, `*` and `#` are allowed. Both empty (default): the number is dialled as stored. The setting applies to all users and only to the links; stored numbers, CardDAV, phonebooks and exports stay unchanged.
 
+It also applies to the *phone view* that every user can turn on for themselves at the top right: favorites as speed-dial tiles, contacts with their phone numbers only (see the user manual). There is nothing to set up for it.
+
 ## Data quality and duplicates
 
 Admins and maintainers find *Data quality* and *Duplicates* in the user menu and on the dashboard:

@@ -1,7 +1,8 @@
 <script lang="ts">
   import { untrack } from 'svelte'
+  import { MediaQuery } from 'svelte/reactivity'
   import logo from './assets/logo.svg'
-  import { ArrowDownUp, Bookmark, Building2, ChevronDown, ClipboardPaste, Copy, Download, FileUp, Filter, ListChecks, LogOut, Monitor, Moon, Sun, Plus, Printer, RefreshCw, Search, Settings, ShieldCheck, SlidersHorizontal, Trash2, User, UserRound, WifiOff, X } from '@lucide/svelte'
+  import { ArrowDownUp, Bookmark, Building2, ChevronDown, ClipboardPaste, Copy, Download, FileUp, Filter, Headset, ListChecks, LogOut, Monitor, Moon, Sun, Plus, Printer, RefreshCw, Search, Settings, ShieldCheck, SlidersHorizontal, Trash2, User, UserRound, WifiOff, X } from '@lucide/svelte'
   import AdvancedFilter from './components/AdvancedFilter.svelte'
   import Combobox from './components/Combobox.svelte'
   import Login from './components/Login.svelte'
@@ -19,6 +20,7 @@
   import Account from './components/Account.svelte'
   import BulkBar from './components/BulkBar.svelte'
   import Dashboard from './components/Dashboard.svelte'
+  import PhoneView from './components/PhoneView.svelte'
   import { ApiError, download, patch } from './lib/api'
   import { pick } from './lib/selection'
   import { toast } from './lib/toast.svelte'
@@ -55,6 +57,11 @@
   $effect(() => localStorage.setItem('kartei:scope', scope))
   let searchEl: HTMLInputElement | undefined = $state()
   let editing = $state(false)
+  // phone view: per device, like the theme
+  let phoneView = $state(localStorage.getItem('kartei:phone-view') === '1')
+  $effect(() => localStorage.setItem('kartei:phone-view', phoneView ? '1' : '0'))
+  const narrow = new MediaQuery('(max-width: 860px)') // no phone view on phones
+  const phoneViewOn = $derived(phoneView && !narrow.current)
 
   // ------------------------------------------------------------- routing
   const parts = $derived(route.path.split('/').filter(Boolean))
@@ -279,6 +286,10 @@
             <RefreshCw size={16} />
           </button>
         {/if}
+        {#if !narrow.current}
+          <button class="btn icon ghost phone-view" class:on={phoneView} role="switch" aria-checked={phoneView} onclick={() => (phoneView = !phoneView)}
+                  title={t('phoneview.toggle')} aria-label={t('phoneview.toggle')}><Headset size={16} /></button>
+        {/if}
         <!-- read only: the same menu proposes the new contact to a maintainer -->
         <button class="btn primary" popovertarget="new-menu"><Plus size={16} /><span class="hide-sm">{t('top.new')}</span><ChevronDown size={14} /></button>
         <div id="new-menu" popover class="menu" style="right: 64px">
@@ -385,7 +396,9 @@
       {/if}
       <main class="pane scroll">
         {#if view.name === 'record'}
-          {#if current}
+          {#if current && phoneViewOn}
+            {#key current.uid}<PhoneView rec={current} />{/key}
+          {:else if current}
             {#key current.uid}<RecordView rec={current} bind:editing onfilter={filterBy} />{/key}
           {:else}
             <Missing uid={view.uid} />
@@ -418,6 +431,8 @@
           {#await qualityPage() then { default: QualityPage }}<QualityPage />{/await}
         {:else if view.name === 'duplicates'}
           {#await duplicatesPage() then { default: DuplicatesPage }}<DuplicatesPage a={view.a} b={view.b} />{/await}
+        {:else if phoneViewOn}
+          <PhoneView />
         {:else}
           <Dashboard onapply={applyState} onscope={(s) => (scope = s)} />
         {/if}
@@ -502,6 +517,8 @@
   .clear { border: 0; background: none; padding: 2px; color: var(--muted); cursor: pointer; display: inline-flex; }
   .right { margin-left: auto; display: flex; align-items: center; gap: 6px; }
   .status { color: var(--muted); }
+  .phone-view { color: var(--muted); }
+  .phone-view.on { color: var(--accent); background: var(--accent-soft); }
   .status.warn { color: var(--warn); display: inline-flex; padding: 0 8px; }
   .spin :global(svg) { animation: spin 0.8s linear infinite; }
 

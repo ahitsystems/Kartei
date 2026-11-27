@@ -4,6 +4,9 @@ All notable changes to Kartei are listed here. The format follows [Keep a Change
 
 ## [Unreleased]
 
+### Added
+- **Phone view:** a switch next to the sync button (remembered per device) turns the start page into speed-dial tiles for the favorites or a saved filter, with a column of recently dialled numbers, and a contact into a large list of its phone numbers only. Search works as always.
+
 ## [0.9.1-beta] – 2026-11-26
 
 New in this release:
