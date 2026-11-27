@@ -94,12 +94,12 @@ class PhonebookTests(TestCase):
     def test_trashed_company_name_is_gone(self):
         """F-4: a company in the recycle bin no longer names its (live) persons' company."""
         Record.objects.filter(pk=self.company.pk).update(deleted_at="2026-01-01T00:00:00Z")
-        phonebook._cache["at"] = 0
+        phonebook._cache["at"] = float("-inf")  # not 0: monotonic() counts from boot, a fresh CI runner is younger than a minute
         self.assertEqual(self.get("/phonebook/lookup?number=%2B491609997381").content.decode(), "Jonas Koch")
 
     def test_only_what_read_only_users_see(self):
         FieldDef.objects.filter(key="mobile").update(visible_to="maintainer")
-        phonebook._cache["at"] = 0
+        phonebook._cache["at"] = float("-inf")  # not 0: monotonic() counts from boot, a fresh CI runner is younger than a minute
         y = self.get("/phonebook/yealink.xml").content.decode()
         self.assertNotIn("+491609997381", y)
         self.assertEqual(self.get("/phonebook/lookup?number=01609997381").status_code, 404)
@@ -120,7 +120,7 @@ class PhonebookTests(TestCase):
         self.assertEqual(self.get("/phonebook/lookup?number=05119999").status_code, 404)
         Record.objects.create(kind="person", last_name="Neu", data={"phone_work": "0511 9999"})
         self.assertEqual(self.get("/phonebook/lookup?number=05119999").status_code, 404)  # checked once a minute
-        phonebook._cache["at"] = 0
+        phonebook._cache["at"] = float("-inf")  # not 0: monotonic() counts from boot, a fresh CI runner is younger than a minute
         self.assertEqual(self.get("/phonebook/lookup?number=05119999").content.decode(), "Neu")
 
 

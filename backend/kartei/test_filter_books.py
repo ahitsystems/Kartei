@@ -154,7 +154,7 @@ class FilterBookTests(TestCase):
         r = self.dav("REPORT", f"/carddav/f-{self.f.id}/", body)
         token = re.findall(r"<d:sync-token>([^<]+)</d:sync-token>", r.content.decode())[-1]
         Record.objects.create(kind="company", name="Neue AG")
-        carddav._members["at"] = 0.0
+        carddav._members["at"] = float("-inf")  # not 0: monotonic() counts from boot
         again = body.replace("<d:sync-token></d:sync-token>", f"<d:sync-token>{token}</d:sync-token>")
         self.assertEqual(self.dav("REPORT", f"/carddav/f-{self.f.id}/", again).status_code, 403)  # start over
 
