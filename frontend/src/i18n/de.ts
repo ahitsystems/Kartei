@@ -214,6 +214,11 @@ export default {
   'account.pw_changed': 'Passwort geändert',
   'account.ldap_hint': "Dein Passwort wird im Active Directory verwaltet.",
 
+  'settings.group.basics': 'Grundlagen',
+  'settings.group.signin': 'Anmeldung',
+  'settings.group.distribution': 'Verteilung',
+  'settings.group.data': 'Daten',
+  'settings.group.operations': 'Betrieb',
   'settings.fields': 'Felder',
   'settings.users': 'Benutzer',
   'settings.ldap': 'LDAP / AD',

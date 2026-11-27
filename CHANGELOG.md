@@ -4,6 +4,9 @@ All notable changes to Kartei are listed here. The format follows [Keep a Change
 
 ## [Unreleased]
 
+### Changed
+- **Settings:** a navigation on the left in five groups (Basics, Sign-in, Distribution, Data, Operations) instead of 16 tabs in one row; settings open on *General*. On phones a list. Admin manual and its screenshots updated.
+
 ## [0.9.2-beta] – 2026-11-27
 
 New in this release:

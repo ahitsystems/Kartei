@@ -7,7 +7,7 @@ other: /de/admin.html
 
 # Administrator manual
 
-This manual is for the IT administrators who install, configure and run Kartei. It covers the Docker setup, operation (updates, backup, logs) and every tab of the *Settings* area. Everyday work with contacts (searching, editing, reviews, proposals, the recycle bin) is described in the [user manual](user.html).
+This manual is for the IT administrators who install, configure and run Kartei. It covers the Docker setup, operation (updates, backup, logs) and every page of the *Settings*. Everyday work with contacts (searching, editing, reviews, proposals, the recycle bin) is described in the [user manual](user.html).
 
 ## Overview
 
@@ -286,7 +286,7 @@ You reach the admin area through the user menu → *Settings*.
 
 Kartei backs up its database itself: every day at the time set under *Settings → Backup* (default 02:30), kept for the days set there (default 14; the newest backup always stays). The database contains everything: contacts, photos, fields, users, settings, history and audit log. Export files can be recreated at any time with *Run now*.
 
-![Backup tab](../img/en/settings-backup.png)
+![Backup page](../img/en/settings-backup.png)
 
 - **Where:** the `exporter` writes the files (`kartei-<date>-<time>.dump`, PostgreSQL's compressed custom format) to `/backup`. By default that is the Docker volume `backups`, which works without further setup but lives on the same disk as the database. Better: a directory on other storage, e.g. a NAS mount, set as `BACKUP_HOST_DIR` in `.env` (owner uid 1000: `chown 1000 /mnt/backup/kartei`). The backup files are readable by this owner only (0600), since they contain password hashes and sessions. Don't use the export share: everyone who reads exports would get the whole database.
 - **Checked:** every file is read back (`pg_restore --list`) before it counts. *Test restore* restores the newest backup into a scratch database (`kartei_restore_test`), counts contacts, fields, users and audit entries, compares them with the live database and deletes the scratch database again. With a dedicated PostgreSQL server, the database user needs the right to create databases for this (`CREATEDB`).
@@ -320,7 +320,7 @@ docker compose logs -f exporter     # exports, syncs, reviews, user import
 docker compose logs --since 1h exporter
 ```
 
-The `exporter` writes one line per export, sync and user import. Their results are also shown in the respective settings tab (*Last run*).
+The `exporter` writes one line per export, sync and user import. Their results are also shown in the respective settings page (*Last run*).
 
 Log lines are JSON, one object per line (`ts`, `level`, `logger`, `msg`, plus details such as `http` for requests or `audit` for audit events), so log shippers and SIEMs can parse them. For plain text lines set `LOG_FORMAT=text` in `.env`; `LOG_LEVEL` (default `INFO`) sets the detail. To forward logs to a SIEM, see [Monitoring and logging](#monitoring).
 
@@ -343,6 +343,8 @@ docker compose exec web python manage.py reset_2fa admin                        
 `reset_2fa` is for a lost authenticator without recovery codes, above all when it is the only admin (otherwise an admin resets it under *Users*). The user then signs in with the password and sets up two-factor sign-in again, at once if it is required. Changes made on the command line appear as user *system* in the audit log.
 
 ## First steps
+
+*Settings* (user menu → *Settings*, admins only) has a navigation on the left with five groups: *Basics* (General, Fields, Users, Review, Email), *Sign-in* (LDAP / AD, Single sign-on), *Distribution* (Outlook / Exchange, Phones & CardDAV, Active Directory, Exports), *Data* (Import, API) and *Operations* (Backup, Monitoring & logging, Audit log). It opens on *General*. On a phone you pick the page from a list at the top.
 
 After installing, work through *Settings* in this order:
 
@@ -385,7 +387,7 @@ Local users remain available as a fallback when the directory is unavailable. A 
 
 A third kind, *SCIM users*, is created and managed by an identity provider; see [Single sign-on](#sso).
 
-![Users tab](../img/en/settings-users.png)
+![Users page](../img/en/settings-users.png)
 
 ### Manage local users
 
@@ -427,7 +429,7 @@ Deactivate them (local users) or remove them from the role groups (LDAP users; t
 
 *Settings → LDAP / AD* connects Kartei to Active Directory. Users then sign in with their AD username and password. With an empty *Server*, LDAP is off and only local users can sign in.
 
-![LDAP / AD tab](../img/en/settings-ldap.png)
+![LDAP / AD page](../img/en/settings-ldap.png)
 
 ### Connection
 
@@ -479,7 +481,7 @@ The box below the button shows the last run: *new · updated · deactivated · l
 
 *Settings → Single sign-on* connects Kartei to an identity provider such as Entra ID, Okta, Authentik or Keycloak (with a SCIM plugin). The provider **creates the users in advance via SCIM** (with their groups) and they **sign in with OpenID Connect**, so the provider's multi-factor authentication and policies apply and no password reaches Kartei. Local users and LDAP keep working alongside.
 
-![The Single sign-on tab](../img/en/settings-sso.png)
+![The Single sign-on page](../img/en/settings-sso.png)
 
 ### Provisioning (SCIM 2.0)
 
@@ -531,7 +533,7 @@ Who can sign in:
 
 Apart from the core fields (first and last name, company name, company link and image), all contact fields are defined by admins under *Settings → Fields*.
 
-![Fields tab](../img/en/settings-fields.png)
+![Fields page](../img/en/settings-fields.png)
 
 ### Field list
 
@@ -649,7 +651,7 @@ To use the fuller set, choose *Import fields* → `fields-example.json`, check t
 
 *Settings → Import* imports persons and companies from a CSV file, for example when you migrate from another system or take over a list. You decide per column where its values go.
 
-![Import tab](../img/en/settings-import.png)
+![Import page](../img/en/settings-import.png)
 
 ### Run the import
 
@@ -719,7 +721,7 @@ docker compose exec web python manage.py import_csv /export/contacts.csv --mappi
 
 *Settings → Exports* writes CSV and Excel files to the export directory, for example for scripts and other applications that import contacts, or for colleagues who open the list in a spreadsheet program. Each export is a profile with its own columns and format.
 
-![Exports tab](../img/en/settings-exports.png)
+![Exports page](../img/en/settings-exports.png)
 
 The list shows each profile with *Format*, *Target file*, *Schedule* and *Last run* (status, time and message). *Run now* writes the file immediately.
 
@@ -802,7 +804,7 @@ Further behaviour:
 
 *Settings → Active Directory* writes all contacts as AD contact objects (`objectClass: contact`) into one OU. Every system that reads contacts from Active Directory can use them, for example the caller ID of a phone system or the address book of a communication client.
 
-![Active Directory tab](../img/en/settings-ad.png)
+![Active Directory page](../img/en/settings-ad.png)
 
 ### How the sync works
 
@@ -850,7 +852,7 @@ Kartei includes a read-only CardDAV server with one address book that contains a
 > If every phone user has an Exchange Online mailbox, the [Outlook / Exchange sync](#outlook-sync) covers iPhones and Android phones alike, and CardDAV can stay disabled. CardDAV is for phones without a personal mailbox (shared or pool phones, users outside the sync group), for installations without Microsoft 365, and when one central read-only address book is preferred over a copy in every mailbox. It also keeps iPhone-specific details such as custom phone labels, phonetic names and relations, which Outlook contacts only hold as notes.
 {: .tip}
 
-![CardDAV tab](../img/en/settings-carddav.png)
+![CardDAV page](../img/en/settings-carddav.png)
 
 ### Set up
 
@@ -904,7 +906,7 @@ The relay is the same image started with other settings (`docker build --target 
 4. *TLS*: with *Verify TLS certificate* on (default), Kartei checks the relay's certificate against the system CAs or, if given, the *CA certificate* (PEM) of your internal CA. Switch verification off only for tests.
 5. Click *Save & test*: Kartei reaches the relay and checks the token. Then tick *Push to the relay*, set *Max. deletions (%)* and *Save*.
 6. Untick *Built-in CardDAV server enabled*. Kartei's own `/carddav/` then answers "not found", so phones can't use the inside server by mistake. (Leaving both on is possible, e.g. during a migration.)
-7. Set up the phones with the relay address. Username and password are the ones from this tab; *Generate new password* reaches the relay with the next push.
+7. Set up the phones with the relay address. Username and password are the ones from this page; *Generate new password* reaches the relay with the next push.
 
 **How the push works:** at every export interval (and within about 10 seconds after *Sync now*), the `exporter` asks the relay which cards it has (uid and version), sends the new and changed cards in requests of about 2 MB and the uids to delete, and always sends the current username and password hash. Every run compares against the relay's real state, so cards lost or added on the relay are corrected on the next run. *Last run* shows the result.
 
@@ -956,7 +958,7 @@ Kartei writes all contacts through Microsoft Graph into a contact folder (defaul
 
 Requirements: Exchange Online mailboxes (Microsoft 365) and an app registration in Entra ID.
 
-![Outlook / Exchange tab](../img/en/settings-outlook.png)
+![Outlook / Exchange page](../img/en/settings-outlook.png)
 
 ### Register the app in Entra ID
 
@@ -1011,7 +1013,7 @@ On the phone (iPhone or Android), users install the Outlook app, sign in with th
 
 The responsible user of each contact (the first field of type *User*, e.g. *Internal contact* in the example field set) is asked from time to time to check that the contact is still correct. How reviewers answer and how maintainers decide on proposals is described in the [user manual](user.html).
 
-![Review tab in rolling mode](../img/en/settings-review-rolling.png)
+![Review page in rolling mode](../img/en/settings-review-rolling.png)
 
 ### Review mode
 
@@ -1060,7 +1062,7 @@ Kartei sends only a count and a link, no contact data. The message is encrypted 
 
 *Settings → Email* sets how Kartei sends its emails (new reviews, reminders, proposals) and what they say. As long as no transport is complete, Kartei sends no emails.
 
-![Email tab](../img/en/settings-mail.png)
+![Email page](../img/en/settings-mail.png)
 
 ### Sending
 
@@ -1077,7 +1079,7 @@ Under the hint, choose one of two transports:
 
 **Microsoft 365 (Exchange Online, OAuth2)**
 
-Kartei sends through Microsoft Graph (`sendMail`) with OAuth2 – no password, no basic authentication. It uses the app registration entered on the [Outlook / Exchange](#outlook-sync) tab (tenant ID, client ID, client secret); the Outlook sync itself does not have to be enabled.
+Kartei sends through Microsoft Graph (`sendMail`) with OAuth2 – no password, no basic authentication. It uses the app registration entered on the [Outlook / Exchange](#outlook-sync) page (tenant ID, client ID, client secret); the Outlook sync itself does not have to be enabled.
 
 1. In the app registration, add the Microsoft Graph application permission `Mail.Send` and grant admin consent.
 2. Limit the permission to the sending mailbox, e.g. with an application access policy for a mail-enabled security group that contains only this mailbox (as shown for the Outlook sync), or with RBAC for Applications. Without a restriction, the app may send as any mailbox of the tenant.
@@ -1111,7 +1113,7 @@ Each recipient gets the text in their own language (the default language if they
 
 ## General settings {#general-settings}
 
-![General tab](../img/en/settings-general.png)
+![General page](../img/en/settings-general.png)
 
 | Setting | Meaning |
 |---|---|
@@ -1166,7 +1168,7 @@ Contacts deleted by maintainers go to the recycle bin (user menu → *Recycle bi
 
 Other systems can read the contacts through a REST API with a token and, with a write token, also create, change and delete them. Tokens see the same fields as a Read only user (fields visible to *Everyone*). The complete reference for developers (endpoints, delta sync, value types, errors, examples, OpenAPI file) is `docs/API.md` in the Kartei repository.
 
-![API tab](../img/en/settings-api.png)
+![API page](../img/en/settings-api.png)
 
 ### Manage tokens
 
@@ -1225,7 +1227,7 @@ Only give a write token to systems that really need to change data, and keep it 
 
 Instead of asking Kartei every few minutes, other systems can be notified right away: a **webhook** sends each change to a contact as an HTTPS request to the system's address, signed with a secret.
 
-![Webhooks on the API tab](../img/en/settings-webhooks.png)
+![Webhooks on the API page](../img/en/settings-webhooks.png)
 
 1. Under *Webhooks* enter a *Name* and the *Address (URL)* the receiving system gives you.
 2. Optionally select the *Events* (created, updated, deleted, restored); none selected means all.
@@ -1241,7 +1243,7 @@ Instead of asking Kartei every few minutes, other systems can be notified right 
 
 *Settings → Audit log* lists every change with time, user, action, object and the changed values (old value struck through → new value).
 
-![Audit log tab](../img/en/settings-audit.png)
+![Audit log page](../img/en/settings-audit.png)
 
 - **Filter** by area: *All areas*, *Contact*, *Field*, *User*, *Settings*, *Export*, *API token*, *Sign-ins*.
 - **Search** in object names and usernames (*Search object or user …*).
@@ -1265,7 +1267,7 @@ Every entry also records the client's IP address; only admins see it, in the *Us
 
 Sign-in entries contain IP addresses and are deleted after the days set under *Settings → Monitoring & logging → Keep sign-in entries* (default 90; 0 = forever). A failed CardDAV or API access is logged once per address and 15 minutes, so a phone with an old password doesn't fill the log. All other entries are kept.
 
-Not logged: the individual runs of exports and syncs (their result is shown in the respective tab, in the `exporter` log and in the [monitoring status](#monitoring)). Automatic actions appear as user *system*, changes through a write token as `api:<token name>`. To send the audit log to a SIEM, see [Syslog to the SIEM](#monitoring).
+Not logged: the individual runs of exports and syncs (their result is shown in the respective page, in the `exporter` log and in the [monitoring status](#monitoring)). Automatic actions appear as user *system*, changes through a write token as `api:<token name>`. To send the audit log to a SIEM, see [Syslog to the SIEM](#monitoring).
 
 Each contact also has its own history tab, see the [user manual](user.html).
 
@@ -1273,7 +1275,7 @@ Each contact also has its own history tab, see the [user manual](user.html).
 
 *Settings → Monitoring & logging* shows the state of Kartei and its background jobs, gives monitoring systems access to it, and sends audit events to your SIEM.
 
-![Monitoring & logging tab](../img/en/settings-monitoring.png)
+![Monitoring & logging page](../img/en/settings-monitoring.png)
 
 ### Endpoints
 
