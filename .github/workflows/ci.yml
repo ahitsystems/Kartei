@@ -215,19 +215,19 @@ jobs:
           no-cache-filters: backend
       # software bills of materials (SPDX and CycloneDX) for the source tree and both images, kept as a build artifact
       - run: mkdir sbom
-      - { uses: anchore/sbom-action@66cbf4bc1f1c0d2edc94016e65bc221b6bb0ad6c, with: { path: ., format: spdx-json, output-file: sbom/kartei-source.spdx.json, upload-artifact: false } }  # v0.24.3: v0.24.3
-      - { uses: anchore/sbom-action@66cbf4bc1f1c0d2edc94016e65bc221b6bb0ad6c, with: { path: ., format: cyclonedx-json, output-file: sbom/kartei-source.cdx.json, upload-artifact: false } }  # v0.24.3: v0.24.3
-      - { uses: anchore/sbom-action@66cbf4bc1f1c0d2edc94016e65bc221b6bb0ad6c, with: { image: kartei:ci, format: spdx-json, output-file: sbom/kartei-image.spdx.json, upload-artifact: false } }  # v0.24.3: v0.24.3
-      - { uses: anchore/sbom-action@66cbf4bc1f1c0d2edc94016e65bc221b6bb0ad6c, with: { image: kartei:ci, format: cyclonedx-json, output-file: sbom/kartei-image.cdx.json, upload-artifact: false } }  # v0.24.3: v0.24.3
-      - { uses: anchore/sbom-action@66cbf4bc1f1c0d2edc94016e65bc221b6bb0ad6c, with: { image: kartei-relay:ci, format: spdx-json, output-file: sbom/kartei-relay-image.spdx.json, upload-artifact: false } }  # v0.24.3: v0.24.3
-      - { uses: anchore/sbom-action@66cbf4bc1f1c0d2edc94016e65bc221b6bb0ad6c, with: { image: kartei-relay:ci, format: cyclonedx-json, output-file: sbom/kartei-relay-image.cdx.json, upload-artifact: false } }  # v0.24.3: v0.24.3
+      - { uses: anchore/sbom-action@dfcb83b97731532d72be422cbc51ee64adb6fd56, with: { path: ., format: spdx-json, output-file: sbom/kartei-source.spdx.json, upload-artifact: false } }  # v0.24.4: v0.24.4
+      - { uses: anchore/sbom-action@dfcb83b97731532d72be422cbc51ee64adb6fd56, with: { path: ., format: cyclonedx-json, output-file: sbom/kartei-source.cdx.json, upload-artifact: false } }  # v0.24.4: v0.24.4
+      - { uses: anchore/sbom-action@dfcb83b97731532d72be422cbc51ee64adb6fd56, with: { image: kartei:ci, format: spdx-json, output-file: sbom/kartei-image.spdx.json, upload-artifact: false } }  # v0.24.4: v0.24.4
+      - { uses: anchore/sbom-action@dfcb83b97731532d72be422cbc51ee64adb6fd56, with: { image: kartei:ci, format: cyclonedx-json, output-file: sbom/kartei-image.cdx.json, upload-artifact: false } }  # v0.24.4: v0.24.4
+      - { uses: anchore/sbom-action@dfcb83b97731532d72be422cbc51ee64adb6fd56, with: { image: kartei-relay:ci, format: spdx-json, output-file: sbom/kartei-relay-image.spdx.json, upload-artifact: false } }  # v0.24.4: v0.24.4
+      - { uses: anchore/sbom-action@dfcb83b97731532d72be422cbc51ee64adb6fd56, with: { image: kartei-relay:ci, format: cyclonedx-json, output-file: sbom/kartei-relay-image.cdx.json, upload-artifact: false } }  # v0.24.4: v0.24.4
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9  # v7
         with:
           name: sbom
           path: sbom/
       # known vulnerabilities (Grype): reported in Security → Code scanning; fails only for critical ones that have a fix
       - id: scan
-        uses: anchore/scan-action@27805bf3b4e84b4a5c980df22ed233c00390a439  # v7.4.2
+        uses: anchore/scan-action@11983a512817154c80a9db660c1a184be7513ed6  # v7.4.3
         with:
           image: kartei:ci
           severity-cutoff: critical
@@ -236,7 +236,7 @@ jobs:
           output-file: kartei.sarif
       - id: scan-relay
         if: always()
-        uses: anchore/scan-action@27805bf3b4e84b4a5c980df22ed233c00390a439  # v7.4.2
+        uses: anchore/scan-action@11983a512817154c80a9db660c1a184be7513ed6  # v7.4.3
         with:
           image: kartei-relay:ci
           severity-cutoff: critical
@@ -244,12 +244,12 @@ jobs:
           output-format: sarif
           output-file: kartei-relay.sarif
       - if: always() && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)
-        uses: github/codeql-action/upload-sarif@33d7b85da1a04171e211befe2c739303b9a4c066  # v4
+        uses: github/codeql-action/upload-sarif@915412ff23e8b7659517e607487dbeae018f2934  # v4
         with:
           sarif_file: kartei.sarif
           category: image-kartei
       - if: always() && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)
-        uses: github/codeql-action/upload-sarif@33d7b85da1a04171e211befe2c739303b9a4c066  # v4
+        uses: github/codeql-action/upload-sarif@915412ff23e8b7659517e607487dbeae018f2934  # v4
         with:
           sarif_file: kartei-relay.sarif
           category: image-kartei-relay

@@ -8,6 +8,20 @@ All notable changes to Kartei are listed here. The format follows [Keep a Change
 - **Phone view:** a switch next to the sync button (remembered per device) turns the start page into speed-dial tiles for the favorites or a saved filter, with a column of recently dialled numbers, and a contact into a large list of its phone numbers only. Search works as always. In the phone view a company lists its people with their extensions, and a number typed into the search can be dialled.
 - **Open the contact for an incoming call:** `/call/<number>` opens the contact with that number (any notation; the exact number wins over extensions), e.g. from the SwyxIt! Web Extension. Setup in the admin manual.
 
+## [0.9.2-beta] – 2026-11-27
+
+New in this release:
+- **New home:** Kartei moved to [github.com/ahitsystems/Kartei](https://github.com/ahitsystems/Kartei). Images are now `ghcr.io/ahitsystems/kartei` and `ghcr.io/ahitsystems/kartei-relay`, the manuals are at [ahitsystems.github.io/Kartei](https://ahitsystems.github.io/Kartei/).
+- Dependency updates.
+
+Upgrading: change `KARTEI_IMAGE` (and `RELAY_IMAGE`, if set) in `.env` to `ghcr.io/ahitsystems/kartei:0.9.2-beta` (and `ghcr.io/ahitsystems/kartei-relay:0.9.2-beta`), then pull the new images. There is no database migration.
+
+### Changed
+
+- **Repository and images:** moved to `ahitsystems` (GitHub repository, container registry, documentation site). All earlier versions were rebuilt there with the same version tags.
+- **Dependencies:** Python base image (security update of `python:3.14-slim`), Svelte 5.59.1, vite-plugin-svelte 7.3.2, Lucide icons 1.79.0, axe-core/playwright 4.14.1, Fluent Bit 5.2.1 (optional logging stack), and the build actions anchore/sbom-action 0.24.4 and anchore/scan-action 7.4.3.
+- **Releases:** beta tags (e.g. `v1.2.0-beta`) are now published as regular GitHub releases and marked as latest, instead of as pre-releases.
+
 ## [0.9.1-beta] – 2026-11-26
 
 New in this release:
@@ -437,7 +451,8 @@ First public beta.
 - German and English, light and dark theme, installable as an app.
 - Images on the GitHub container registry, manuals as PDF, SBOMs and the OpenAPI description attached to the release.
 
-[Unreleased]: https://github.com/ahitsystems/Kartei/compare/v0.9.1-beta...HEAD
+[Unreleased]: https://github.com/ahitsystems/Kartei/compare/v0.9.2-beta...HEAD
+[0.9.2-beta]: https://github.com/ahitsystems/Kartei/compare/v0.9.1-beta...v0.9.2-beta
 [0.9.1-beta]: https://github.com/ahitsystems/Kartei/compare/v0.9.0-beta...v0.9.1-beta
 [0.9.0-beta]: https://github.com/ahitsystems/Kartei/compare/v0.8.5-beta...v0.9.0-beta
 [0.8.5-beta]: https://github.com/ahitsystems/Kartei/compare/v0.8.4-beta...v0.8.5-beta

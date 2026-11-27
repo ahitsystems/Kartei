@@ -1,4 +1,4 @@
-# Release (images for linux/amd64 and linux/arm64): push a tag like v1.2.3 (or v1.2.3-beta: a pre-release, without the 1.2 / 1 image tags). Publishes both images to the GitHub container registry and creates the
+# Release (images for linux/amd64 and linux/arm64): push a tag like v1.2.3 (or v1.2.3-beta: also a regular release, but without the 1.2 / 1 image tags). Publishes both images to the GitHub container registry and creates the
 # GitHub release with the manuals as PDF, openapi.yaml and SBOMs (SPDX, CycloneDX) for the source tree and both images.
 name: Release
 
@@ -98,12 +98,12 @@ jobs:
           provenance: mode=max
 
       - run: mkdir dist && cp docs/openapi.yaml dist/   # REST API description as a release asset
-      - { uses: anchore/sbom-action@66cbf4bc1f1c0d2edc94016e65bc221b6bb0ad6c, with: { path: ., format: spdx-json, output-file: "dist/kartei-${{ env.VERSION }}-source.spdx.json", upload-artifact: false } }  # v0.24.3: v0.24.3
-      - { uses: anchore/sbom-action@66cbf4bc1f1c0d2edc94016e65bc221b6bb0ad6c, with: { path: ., format: cyclonedx-json, output-file: "dist/kartei-${{ env.VERSION }}-source.cdx.json", upload-artifact: false } }  # v0.24.3: v0.24.3
-      - { uses: anchore/sbom-action@66cbf4bc1f1c0d2edc94016e65bc221b6bb0ad6c, with: { image: "${{ fromJSON(steps.meta.outputs.json).tags[0] }}", format: spdx-json, output-file: "dist/kartei-${{ env.VERSION }}-image.spdx.json", upload-artifact: false } }  # v0.24.3: v0.24.3
-      - { uses: anchore/sbom-action@66cbf4bc1f1c0d2edc94016e65bc221b6bb0ad6c, with: { image: "${{ fromJSON(steps.meta.outputs.json).tags[0] }}", format: cyclonedx-json, output-file: "dist/kartei-${{ env.VERSION }}-image.cdx.json", upload-artifact: false } }  # v0.24.3: v0.24.3
-      - { uses: anchore/sbom-action@66cbf4bc1f1c0d2edc94016e65bc221b6bb0ad6c, with: { image: "${{ fromJSON(steps.relay.outputs.json).tags[0] }}", format: spdx-json, output-file: "dist/kartei-relay-${{ env.VERSION }}-image.spdx.json", upload-artifact: false } }  # v0.24.3: v0.24.3
-      - { uses: anchore/sbom-action@66cbf4bc1f1c0d2edc94016e65bc221b6bb0ad6c, with: { image: "${{ fromJSON(steps.relay.outputs.json).tags[0] }}", format: cyclonedx-json, output-file: "dist/kartei-relay-${{ env.VERSION }}-image.cdx.json", upload-artifact: false } }  # v0.24.3: v0.24.3
+      - { uses: anchore/sbom-action@dfcb83b97731532d72be422cbc51ee64adb6fd56, with: { path: ., format: spdx-json, output-file: "dist/kartei-${{ env.VERSION }}-source.spdx.json", upload-artifact: false } }  # v0.24.4: v0.24.4
+      - { uses: anchore/sbom-action@dfcb83b97731532d72be422cbc51ee64adb6fd56, with: { path: ., format: cyclonedx-json, output-file: "dist/kartei-${{ env.VERSION }}-source.cdx.json", upload-artifact: false } }  # v0.24.4: v0.24.4
+      - { uses: anchore/sbom-action@dfcb83b97731532d72be422cbc51ee64adb6fd56, with: { image: "${{ fromJSON(steps.meta.outputs.json).tags[0] }}", format: spdx-json, output-file: "dist/kartei-${{ env.VERSION }}-image.spdx.json", upload-artifact: false } }  # v0.24.4: v0.24.4
+      - { uses: anchore/sbom-action@dfcb83b97731532d72be422cbc51ee64adb6fd56, with: { image: "${{ fromJSON(steps.meta.outputs.json).tags[0] }}", format: cyclonedx-json, output-file: "dist/kartei-${{ env.VERSION }}-image.cdx.json", upload-artifact: false } }  # v0.24.4: v0.24.4
+      - { uses: anchore/sbom-action@dfcb83b97731532d72be422cbc51ee64adb6fd56, with: { image: "${{ fromJSON(steps.relay.outputs.json).tags[0] }}", format: spdx-json, output-file: "dist/kartei-relay-${{ env.VERSION }}-image.spdx.json", upload-artifact: false } }  # v0.24.4: v0.24.4
+      - { uses: anchore/sbom-action@dfcb83b97731532d72be422cbc51ee64adb6fd56, with: { image: "${{ fromJSON(steps.relay.outputs.json).tags[0] }}", format: cyclonedx-json, output-file: "dist/kartei-relay-${{ env.VERSION }}-image.cdx.json", upload-artifact: false } }  # v0.24.4: v0.24.4
 
       - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333  # v8.0.2
         with:
@@ -117,5 +117,5 @@ jobs:
           # the version's section of CHANGELOG.md, followed by GitHub's generated notes (empty section: generated notes only)
           awk -v v="## [${VERSION#v}]" 'index($0, v) == 1 {on = 1; next} /^## \[/ {on = 0} on' CHANGELOG.md > notes.md
           gh release view "$VERSION" >/dev/null 2>&1 || gh release create "$VERSION" --verify-tag --generate-notes --notes-file notes.md \
-            --title "Kartei ${VERSION#v}" $([[ $VERSION == *-* ]] && echo --prerelease)
+            --title "Kartei ${VERSION#v}"
           gh release upload "$VERSION" dist/* --clobber
