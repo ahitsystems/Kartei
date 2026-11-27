@@ -256,6 +256,19 @@ test.describe('finding contacts', () => {
     await expect(page.getByRole('link', { name: 'Dial' })).toHaveCount(0)
   })
 
+  test('names heard on the phone: similar names after the real hits, not counted or exported', async ({ as }) => {
+    const page = await as('kkramer')
+    const fischer = (await page.records()).filter((r) => r.last_name === 'Fischer')
+    await page.goto('/')
+    await search(page).fill('Fsicher')  // one typo: no real hit
+    await expect(list(page).getByRole('option')).toHaveCount(fischer.length)
+    await expect(list(page).getByRole('option').first()).toContainText('similar')
+    await expect(page.getByText('0 entries · ')).toBeVisible()
+    await expect(page.getByRole('button', { name: 'Export list' })).toBeDisabled()  // exports take only real hits
+    await search(page).press('Enter')
+    await expect(page.getByRole('heading', { name: /Fischer$/ })).toBeVisible()
+  })
+
   test('umlauts and spelling variants find the same contacts', async ({ as }) => {
     const page = await as('kkramer')
     await page.goto('/')

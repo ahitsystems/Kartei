@@ -7,10 +7,12 @@
 
   interface Props {
     items: Indexed[]; selected: string | null; query: string
+    /** items from this index on are similar names, not real hits */
+    similarFrom?: number
     /** selection mode (bulk edit): a click toggles the row, shift-click a range */
     picked?: Set<string> | null; onpick?: (uid: string, shift: boolean) => void
   }
-  let { items, selected, query, picked = null, onpick }: Props = $props()
+  let { items, selected, query, similarFrom = Infinity, picked = null, onpick }: Props = $props()
 
   const ROW = 56
   let viewport: HTMLDivElement
@@ -78,6 +80,7 @@
           </span>
           <span class="sub">{subtitle(rec)}</span>
         </span>
+        {#if start + i >= similarFrom}<span class="badge similar" title={t('list.similar_hint')}>{t('list.similar')}</span>{/if}
       </a>
     {/each}
   </div>
@@ -103,5 +106,6 @@
   .name { font-weight: 500; }
   .sub { color: var(--muted); font-size: 12px; min-height: 17px; }
   mark { background: color-mix(in srgb, var(--accent) 22%, transparent); color: inherit; border-radius: 2px; }
+  .similar { margin-left: auto; flex: none; }
   .empty { padding: 40px 20px; text-align: center; color: var(--muted); }
 </style>
