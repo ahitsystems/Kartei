@@ -48,6 +48,8 @@ You can install Kartei as an app. It then opens in its own window and, after the
 
 When there is no connection, a crossed-out Wi-Fi icon appears at the top right (*Offline – showing cached data*). You can still search and read contacts, but saving changes needs a connection.
 
+Without the server, Kartei only shows data synced on this device in the last 24 hours. If the last sync is older, the sign-in page appears with a note that the server can't be reached: this way a shared computer doesn't keep showing the last user's contacts.
+
 ### Language and appearance
 
 Click the person icon at the top right to open the **user menu**. It shows your name and role, and you can change:

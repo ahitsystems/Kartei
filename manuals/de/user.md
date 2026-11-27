@@ -48,6 +48,8 @@ Du kannst Kartei als App installieren. Sie öffnet sich dann in einem eigenen Fe
 
 Ohne Verbindung erscheint oben rechts ein durchgestrichenes WLAN-Symbol (*Offline – zeige zwischengespeicherte Daten*). Suchen und Lesen funktioniert weiter, zum Speichern brauchst du aber eine Verbindung.
 
+Ohne Server zeigt Kartei nur Daten, die auf diesem Gerät in den letzten 24 Stunden synchronisiert wurden. Ist der letzte Abgleich älter, erscheint die Anmeldung mit dem Hinweis, dass der Server nicht erreichbar ist: So zeigt ein gemeinsam genutzter Rechner nicht auf Dauer die Kontakte des letzten Benutzers.
+
 ### Sprache und Darstellung
 
 Ein Klick auf das Personen-Symbol oben rechts öffnet das **Benutzermenü**. Dort siehst du deinen Namen und deine Rolle und kannst einstellen:

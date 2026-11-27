@@ -41,7 +41,7 @@ class Store {
   defaultLang = $state<Lang>('de')
   /** address link template from the settings ({address}); '' = no link */
   mapUrl = $state('')
-  tel = $state<TelPrefix>({ outside: '', plus: '' })
+  tel = $state.raw<TelPrefix>({ outside: '', plus: '' }) // raw like everything in the offline snapshot: IndexedDB can't store proxies
   /** logo on the phone list: "kartei", "none", or the version of the organisation's own (/api/print-logo?v=…) */
   printLogo = $state('kartei')
   /** "Sign in with Microsoft" is offered (from the session) */
@@ -327,7 +327,8 @@ class Store {
         reviews: this.reviews, proposals: this.proposals,
         recent: this.recent, favorites: this.favorites, filters: this.filters,
       }
-      idbSet(CACHE_KEY, snap).catch(() => {})
+      // a failure here means no offline start, ever: say so (a deep $state proxy in the snapshot did it once, silently)
+      idbSet(CACHE_KEY, snap).catch((e) => console.error('offline cache not saved:', e))
     }, 300)
   }
 
