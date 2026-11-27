@@ -165,8 +165,14 @@ def checks(s):
         state = "crit" if st.get("error") or age is None or age > 50 * 3600 else "warn" if age > 26 * 3600 else "ok"
         out.append({"name": "backup", "status": state, "age_s": age,
                     "detail": st.get("error") or ("never run" if age is None else "last backup too old" if state != "ok" else "")})
-    if (rt := s.restore_test_status or {}).get("error"):
+    rt = s.restore_test_status or {}
+    if rt.get("error"):
         out.append({"name": "restore_test", "status": "warn", "age_s": _age(rt.get("at")), "detail": rt["error"][:300]})
+    elif s.backup_enabled and s.restore_test_days:  # automatic: a test must have succeeded recently, not just not failed
+        ok_age = _age(rt.get("ok_at") or (rt.get("ok") and rt.get("at")) or None)
+        late = ok_age is None or ok_age > (s.restore_test_days + 2) * 86400
+        out.append({"name": "restore_test", "status": "warn" if late else "ok", "age_s": ok_age,
+                    "detail": ("never run" if ok_age is None else "last successful restore test too old") if late else ""})
     if s.syslog_enabled:
         st = s.syslog_status or {}
         failing = st.get("error") and (_age(st.get("error_at")) or 0) < 3600

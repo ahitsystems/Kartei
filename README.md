@@ -24,7 +24,7 @@ Kartei is a contact directory for persons and companies. It suits organizations 
   - a REST API with tokens (read only, or read and write)
 - **Sign-in:** single sign-on with any OpenID Connect provider and SCIM provisioning (Entra ID, Okta, Authentik, …), LDAP/Active Directory with role groups, plus local accounts.
 - **Email:** via SMTP or Microsoft 365 (OAuth2), with editable texts.
-- **Operations:** daily database backups with a restore test, health and status endpoints for monitoring systems (Checkmk, Zabbix, PRTG), sign-ins and changes in the audit log, sent to your SIEM via syslog.
+- **Operations:** daily database backups with an automatic weekly restore test, health and status endpoints for monitoring systems (Checkmk, Zabbix, PRTG), sign-ins and changes in the audit log, sent to your SIEM via syslog.
 - **Interface:** German and English, light and dark theme, and it can be installed as an app (PWA).
 
 ## Documentation

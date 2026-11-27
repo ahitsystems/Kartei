@@ -2,7 +2,7 @@ import os
 import shutil
 import tempfile
 import time
-from datetime import datetime
+from datetime import datetime, timedelta
 from pathlib import Path
 from unittest import mock
 
@@ -90,3 +90,62 @@ class BackupTests(TempBackupDir, ApiTestBase):
         self.assertTrue(self.j("post", "/api/admin/backup/restore-test")["restore_test_requested"])
         self.as_("maintainer")
         self.j("post", "/api/admin/backup/run", status=403)
+
+
+class AutoRestoreTestTests(TempBackupDir, ApiTestBase):
+    """the restore test runs on its own after the nightly backup every restore_test_days days"""
+    def test_due(self):
+        s = Settings.get()
+        now = timezone.now()
+        ago = lambda **kw: {"at": (now - timedelta(**kw)).isoformat(), "ok": True}
+        self.assertEqual(s.restore_test_days, 7)  # on by default
+        self.assertTrue(backup.restore_test_due(s, now))  # never tested
+        s.restore_test_status = ago(days=6)
+        self.assertFalse(backup.restore_test_due(s, now))
+        s.restore_test_status = ago(days=6, hours=13)  # last week's ran a little later: still this week
+        self.assertTrue(backup.restore_test_due(s, now))
+        s.restore_test_days = 0  # on request only
+        self.assertFalse(backup.restore_test_due(s, now))
+        s.restore_test_days, s.backup_enabled = 7, False
+        self.assertFalse(backup.restore_test_due(s, now))
+
+    def test_runs_after_a_successful_scheduled_backup(self):
+        with mock.patch.object(backup, "due", return_value=True), \
+             mock.patch.object(backup, "run", return_value={"ok": True}), \
+             mock.patch.object(backup, "restore_test", return_value={"ok": True}) as rt:
+            self.assertEqual(backup.scheduled(Settings.get()), {"backup": {"ok": True}, "restore_test": {"ok": True}})
+            Settings.objects.update(restore_test_status={"at": timezone.now().isoformat(), "ok": True})
+            self.assertEqual(backup.scheduled(Settings.get()), {"ok": True})  # tested recently: backup only
+        self.assertEqual(rt.call_count, 1)
+        Settings.objects.update(restore_test_status={})
+        with mock.patch.object(backup, "due", return_value=True), \
+             mock.patch.object(backup, "run", return_value={"error": "disk full"}), \
+             mock.patch.object(backup, "restore_test") as rt:
+            backup.scheduled(Settings.get())  # nothing new to test
+        rt.assert_not_called()
+        with mock.patch.object(backup, "due", return_value=False), mock.patch.object(backup, "run") as run:
+            self.assertIsNone(backup.scheduled(Settings.get()))
+        run.assert_not_called()
+
+    def test_monitoring_wants_a_recent_successful_test(self):
+        check = lambda: {c["name"]: c for c in monitoring.checks(Settings.get())}.get("restore_test")
+        self.assertEqual((check()["status"], check()["detail"]), ("warn", "never run"))
+        ok_at = timezone.now() - timedelta(days=1)
+        Settings.objects.update(restore_test_status={"at": ok_at.isoformat(), "ok": True, "ok_at": ok_at.isoformat()})
+        self.assertEqual(check()["status"], "ok")
+        # a failed test keeps the time of the last successful one; the failure itself is the warning
+        Settings.objects.update(backup_status={})
+        rt = backup.restore_test()
+        self.assertEqual((rt["error"], rt["ok_at"]), ("no backup yet", ok_at.isoformat()))
+        self.assertEqual((check()["status"], check()["detail"]), ("warn", "no backup yet"))
+        old = (timezone.now() - timedelta(days=10)).isoformat()
+        Settings.objects.update(restore_test_status={"at": old, "ok": True})  # from before ok_at existed
+        self.assertEqual((check()["status"], check()["detail"]), ("warn", "last successful restore test too old"))
+        Settings.objects.update(restore_test_days=0)  # on request only: no check unless one failed
+        self.assertIsNone(check())
+
+    def test_setting(self):
+        self.as_("admin")
+        r = self.j("put", "/api/admin/settings", {"restore_test_days": 366}, status=400)
+        self.assertEqual(r["fields"], {"restore_test_days": "invalid_number"})
+        self.assertEqual(self.j("put", "/api/admin/settings", {"restore_test_days": 0})["restore_test_days"], 0)

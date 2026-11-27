@@ -95,6 +95,7 @@ class Settings(models.Model):
     backup_keep_days = models.PositiveSmallIntegerField(default=14)
     backup_status = models.JSONField(default=dict, blank=True)  # last run, written by the exporter
     backup_requested = models.DateTimeField(null=True, blank=True)  # "back up now"; the exporter polls it
+    restore_test_days = models.PositiveSmallIntegerField(default=7)  # restore test after the nightly backup every n days; 0 = on request only
     restore_test_status = models.JSONField(default=dict, blank=True)
     restore_test_requested = models.DateTimeField(null=True, blank=True)
     audit_signin_days = models.PositiveIntegerField(default=90)  # sign-in entries (with IPs) kept this long; 0 = forever

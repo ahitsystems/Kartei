@@ -34,7 +34,8 @@
   async function save() {
     errors = {}
     try {
-      s = await put('/api/admin/settings', { backup_enabled: s!.backup_enabled, backup_time: s!.backup_time, backup_keep_days: s!.backup_keep_days })
+      s = await put('/api/admin/settings', { backup_enabled: s!.backup_enabled, backup_time: s!.backup_time, backup_keep_days: s!.backup_keep_days,
+                                                  restore_test_days: s!.restore_test_days })
       toast(t('settings.saved'))
       return true
     } catch (e) {
@@ -69,6 +70,12 @@
           <input id="bk" class="input narrow" type="number" min="1" max="365" bind:value={s.backup_keep_days} />
           {#if errors.backup_keep_days}<div class="error-text">{terr(errors.backup_keep_days)}</div>{/if}
         </div>
+      </div>
+      <div class="field">
+        <label class="label" for="rd">{t('backup.restore_days')}</label>
+        <input id="rd" class="input narrow" type="number" min="0" max="365" bind:value={s.restore_test_days} aria-describedby="rd-hint" />
+        {#if errors.restore_test_days}<div class="error-text">{terr(errors.restore_test_days)}</div>{/if}
+        <p class="hint" id="rd-hint">{t('backup.restore_days_hint')}</p>
       </div>
       <div class="actions">
         <button type="button" class="btn" class:spin={pending.backup} disabled={!!pending.backup} onclick={() => request('run')}>
@@ -122,6 +129,7 @@
   h2 { font-size: 15px; margin: 0; }
   .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
   .narrow { width: 140px; }
+  .field .hint { margin-top: 6px; }
   .check { display: flex; align-items: center; gap: 8px; cursor: pointer; }
   .actions { display: flex; gap: 8px; flex-wrap: wrap; }
   .spacer { flex: 1; }

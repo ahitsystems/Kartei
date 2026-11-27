@@ -1367,6 +1367,8 @@ export default {
   'backup.enabled': "Tägliche Sicherung",
   'backup.time': "Uhrzeit",
   'backup.keep': "Sicherungen aufbewahren (Tage)",
+  'backup.restore_days': "Automatischer Wiederherstellungstest: Abstand (Tage)",
+  'backup.restore_days_hint': "0 = nur von Hand. Nach der nächtlichen Sicherung spielt Kartei sie in eine Testdatenbank ein und vergleicht sie mit der laufenden; das Monitoring warnt, wenn der letzte erfolgreiche Test zu alt ist. Bei einem eigenen PostgreSQL-Server braucht der Datenbankbenutzer dafür das Recht CREATEDB.",
   'backup.run': "Jetzt sichern",
   'backup.restore_test': "Wiederherstellung testen",
   'backup.last': "Letzte Sicherung",
