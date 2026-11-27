@@ -80,7 +80,7 @@
     if (a === 'share') return { name: 'vcard' as const, from: 'share' as const }
     if (a === 'report' && b) return { name: 'report' as const, uid: b }
     if (a === 'trash') return { name: 'trash' as const }
-    if (a === 'settings') return { name: 'settings' as const, tab: b ?? 'fields' }
+    if (a === 'settings') return { name: 'settings' as const, tab: b ?? 'general' }
     if (a === 'account') return { name: 'account' as const }
     if (a === 'quality') return { name: 'quality' as const }
     if (a === 'call' && b) return { name: 'call' as const, number: decode(b) }
@@ -349,7 +349,7 @@
             <a href="/duplicates" onclick={() => document.getElementById('user-menu')?.hidePopover()}><Copy size={16} />{t('dupes.title')}</a>
           {/if}
           {#if store.isAdmin}
-            <a href="/settings/fields" onclick={() => document.getElementById('user-menu')?.hidePopover()}><Settings size={16} />{t('top.settings')}</a>
+            <a href="/settings/general" onclick={() => document.getElementById('user-menu')?.hidePopover()}><Settings size={16} />{t('top.settings')}</a>
           {/if}
           <button onclick={() => store.logout()}><LogOut size={16} />{t('top.logout')}</button>
           {#if store.about}

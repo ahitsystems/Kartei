@@ -70,7 +70,7 @@ test.describe('accessibility', () => {
     test(`main screens have no serious accessibility problems (${theme})`, async ({ as }) => {
       const opts = { colorScheme: theme }
       const pages = [[null, '/'], ['mmuster', '/'], ['mmuster', 'person'], ['mmuster', '/new/person'], ['mmuster', '/phonelist'],
-        ['mmuster', '/account'], ['admin', '/settings/fields'], ['admin', '/settings/users'], ['admin', '/settings/api'], ['admin', '/settings/monitoring'], ['admin', '/settings/backup']]
+        ['mmuster', '/account'], ['admin', '/settings'], ['admin', '/settings/fields'], ['admin', '/settings/users'], ['admin', '/settings/api'], ['admin', '/settings/monitoring'], ['admin', '/settings/backup']]
       const found = []
       for (const [user, path] of pages) {
         const page = await as(user, opts)
@@ -85,6 +85,24 @@ test.describe('accessibility', () => {
       expect(found).toEqual([])
     })
   }
+})
+
+test.describe('settings', () => {
+  test('settings open on General; the grouped navigation leads to every page, on a phone a list does', async ({ as }) => {
+    const page = await as('admin')
+    await page.goto('/')
+    await page.getByRole('button', { name: /admin/i }).click()
+    await page.getByRole('link', { name: 'Settings' }).click()
+    await expect(page).toHaveURL(/\/settings\/general$/)
+    const nav = page.getByRole('navigation', { name: 'Settings' })
+    await expect(nav.getByRole('link', { name: 'General' })).toHaveAttribute('aria-current', 'page')
+    await expect(nav.getByRole('link')).toHaveCount(16)
+    await nav.getByRole('link', { name: 'Backup' }).click()
+    await expect(page).toHaveURL(/\/settings\/backup$/)
+    await page.setViewportSize({ width: 390, height: 844 })
+    await page.getByRole('combobox', { name: 'Settings' }).selectOption('exports')
+    await expect(page).toHaveURL(/\/settings\/exports$/)
+  })
 })
 
 test.describe('sign-in', () => {

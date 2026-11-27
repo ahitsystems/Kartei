@@ -221,6 +221,11 @@ export default {
   'account.pw_changed': 'Password changed',
   'account.ldap_hint': 'Your password is managed in Active Directory.',
 
+  'settings.group.basics': 'Basics',
+  'settings.group.signin': 'Sign-in',
+  'settings.group.distribution': 'Distribution',
+  'settings.group.data': 'Data',
+  'settings.group.operations': 'Operations',
   'settings.fields': 'Fields',
   'settings.users': 'Users',
   'settings.ldap': 'LDAP / AD',

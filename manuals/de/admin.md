@@ -7,7 +7,7 @@ other: /en/admin.html
 
 # Administrationshandbuch
 
-Dieses Handbuch richtet sich an die IT-Administration, die Kartei installiert, einrichtet und betreibt. Es beschreibt die Einrichtung mit Docker, den Betrieb (Updates, Sicherung, Logs) und alle Reiter der *Einstellungen*. Die tägliche Arbeit mit Kontakten (Suchen, Bearbeiten, Prüfungen, Vorschläge, Papierkorb) steht im [Benutzerhandbuch](user.html).
+Dieses Handbuch richtet sich an die IT-Administration, die Kartei installiert, einrichtet und betreibt. Es beschreibt die Einrichtung mit Docker, den Betrieb (Updates, Sicherung, Logs) und alle Bereiche der *Einstellungen*. Die tägliche Arbeit mit Kontakten (Suchen, Bearbeiten, Prüfungen, Vorschläge, Papierkorb) steht im [Benutzerhandbuch](user.html).
 
 ## Überblick
 
@@ -286,7 +286,7 @@ In die Administration kommst du über das Benutzermenü → *Einstellungen*.
 
 Kartei sichert seine Datenbank selbst: jeden Tag zur Uhrzeit unter *Einstellungen → Sicherung* (Standard 02:30), aufbewahrt für die dort eingestellten Tage (Standard 14; die neueste Sicherung bleibt immer). Die Datenbank enthält alles: Kontakte, Fotos, Felder, Benutzer, Einstellungen, Verlauf und Protokoll. Die Exportdateien lassen sich jederzeit mit *Jetzt ausführen* neu erzeugen.
 
-![Reiter Sicherung](../img/de/settings-backup.png)
+![Bereich Sicherung](../img/de/settings-backup.png)
 
 - **Wohin:** Der `exporter` schreibt die Dateien (`kartei-<Datum>-<Uhrzeit>.dump`, das komprimierte Custom-Format von PostgreSQL) nach `/backup`. Standardmäßig ist das das Docker-Volume `backups`. Das funktioniert ohne weitere Einrichtung, liegt aber auf derselben Platte wie die Datenbank. Besser: ein Verzeichnis auf anderem Speicher, z. B. ein NAS-Mount, als `BACKUP_HOST_DIR` in der `.env` (Eigentümer uid 1000: `chown 1000 /mnt/backup/kartei`). Die Sicherungsdateien sind nur für diesen Eigentümer lesbar (0600), denn sie enthalten Passwort-Hashes und Sitzungen. Nimm nicht die Export-Freigabe: Wer Exporte lesen darf, bekäme die ganze Datenbank.
 - **Geprüft:** Jede Datei wird zurückgelesen (`pg_restore --list`), bevor sie zählt. *Wiederherstellung testen* spielt die neueste Sicherung in eine Testdatenbank (`kartei_restore_test`) ein, zählt Kontakte, Felder, Benutzer und Protokolleinträge, vergleicht sie mit der laufenden Datenbank und löscht die Testdatenbank wieder. Bei einem eigenen PostgreSQL-Server braucht der Datenbankbenutzer dafür das Recht, Datenbanken anzulegen (`CREATEDB`).
@@ -320,7 +320,7 @@ docker compose logs -f exporter     # Exporte, Syncs, Prüfungen, Benutzerimport
 docker compose logs --since 1h exporter
 ```
 
-Der `exporter` schreibt pro Export, Sync und Benutzerimport eine Zeile. Die Ergebnisse siehst du außerdem im jeweiligen Reiter der Einstellungen (*Letzter Lauf*).
+Der `exporter` schreibt pro Export, Sync und Benutzerimport eine Zeile. Die Ergebnisse siehst du außerdem im jeweiligen Bereich der Einstellungen (*Letzter Lauf*).
 
 Die Logzeilen sind JSON, ein Objekt pro Zeile (`ts`, `level`, `logger`, `msg` und Details wie `http` bei Anfragen oder `audit` bei Protokolleinträgen), damit Log-Shipper und SIEM sie auswerten können. Für Klartextzeilen setzt du `LOG_FORMAT=text` in der `.env`; `LOG_LEVEL` (Standard `INFO`) bestimmt die Ausführlichkeit. Logs an ein SIEM weiterleiten: siehe [Monitoring und Protokolle](#monitoring).
 
@@ -343,6 +343,8 @@ docker compose exec web python manage.py reset_2fa admin                        
 `reset_2fa` ist für einen verlorenen Authenticator ohne Wiederherstellungscodes, vor allem beim einzigen Admin (sonst setzt ein Admin ihn unter *Benutzer* zurück). Der Benutzer meldet sich danach mit dem Passwort an und richtet die Zwei-Faktor-Anmeldung neu ein, sofort, wenn sie Pflicht ist. Änderungen von der Kommandozeile erscheinen im Protokoll als Benutzer *system*.
 
 ## Erste Schritte
+
+Die *Einstellungen* (Benutzermenü → *Einstellungen*, nur für Admins) haben links eine Navigation mit fünf Gruppen: *Grundlagen* (Allgemein, Felder, Benutzer, Prüfung, E-Mail), *Anmeldung* (LDAP / AD, Single Sign-on), *Verteilung* (Outlook / Exchange, Telefone & CardDAV, Active Directory, Exporte), *Daten* (Import, API) und *Betrieb* (Sicherung, Monitoring & Protokolle, Protokoll). Sie öffnen mit *Allgemein*. Auf dem Handy wählst du den Bereich aus einer Liste oben.
 
 Arbeite nach der Installation die *Einstellungen* in dieser Reihenfolge ab:
 
@@ -385,7 +387,7 @@ Lokale Benutzer bleiben als Rückfallebene erhalten, falls das Verzeichnis nicht
 
 Eine dritte Art, *SCIM-Benutzer*, legt ein Identity-Provider an und verwaltet sie; siehe [Single Sign-on](#sso).
 
-![Reiter Benutzer](../img/de/settings-users.png)
+![Bereich Benutzer](../img/de/settings-users.png)
 
 ### Lokale Benutzer verwalten
 
@@ -427,7 +429,7 @@ Deaktivieren (lokale Benutzer) oder aus den Rollengruppen entfernen (LDAP-Benutz
 
 Unter *Einstellungen → LDAP / AD* verbindest du Kartei mit dem Active Directory. Die Benutzer melden sich dann mit ihrem AD-Benutzernamen und -Passwort an. Bleibt *Server* leer, ist LDAP aus, und nur lokale Benutzer können sich anmelden.
 
-![Reiter LDAP / AD](../img/de/settings-ldap.png)
+![Bereich LDAP / AD](../img/de/settings-ldap.png)
 
 ### Verbindung
 
@@ -479,7 +481,7 @@ Das Feld unter der Schaltfläche zeigt den letzten Lauf: *neu · aktualisiert ·
 
 *Einstellungen → Single Sign-on* verbindet Kartei mit einem Identity-Provider wie Entra ID, Okta, Authentik oder Keycloak (mit SCIM-Plugin). Der Provider **legt die Benutzer vorab per SCIM an** (mit ihren Gruppen), und sie **melden sich mit OpenID Connect an** – so gelten seine Mehrfaktor-Authentifizierung und Richtlinien, und kein Passwort erreicht Kartei. Lokale Benutzer und LDAP funktionieren weiter.
 
-![Der Reiter Single Sign-on](../img/de/settings-sso.png)
+![Der Bereich Single Sign-on](../img/de/settings-sso.png)
 
 ### Bereitstellung (SCIM 2.0)
 
@@ -531,7 +533,7 @@ Wer sich anmelden kann:
 
 Bis auf die Stammfelder (Vor- und Nachname, Firmenname, Firmenzuordnung und Bild) legen Admins alle Kontaktfelder unter *Einstellungen → Felder* fest.
 
-![Reiter Felder](../img/de/settings-fields.png)
+![Bereich Felder](../img/de/settings-fields.png)
 
 ### Feldliste
 
@@ -649,7 +651,7 @@ Für den umfangreicheren Bestand wählst du *Felder importieren* → `fields-exa
 
 Unter *Einstellungen → Import* importierst du Personen und Firmen aus einer CSV-Datei – etwa beim Umzug von einem anderen System oder zur Übernahme einer Liste. Für jede Spalte legst du fest, wohin ihre Werte gehen.
 
-![Reiter Import](../img/de/settings-import.png)
+![Bereich Import](../img/de/settings-import.png)
 
 ### Import ausführen
 
@@ -719,7 +721,7 @@ docker compose exec web python manage.py import_csv /export/kontakte.csv --mappi
 
 Unter *Einstellungen → Exporte* schreibt Kartei CSV- und Excel-Dateien ins Exportverzeichnis – etwa für Skripte und andere Anwendungen, die Kontakte einlesen, oder für Kolleginnen und Kollegen, die die Liste in einer Tabellenkalkulation öffnen. Jeder Export ist ein Profil mit eigenen Spalten und eigenem Format.
 
-![Reiter Exporte](../img/de/settings-exports.png)
+![Bereich Exporte](../img/de/settings-exports.png)
 
 Die Liste zeigt jedes Profil mit *Format*, *Zieldatei*, *Ausführung* und *Letzter Lauf* (Status, Zeitpunkt und Meldung). *Jetzt ausführen* schreibt die Datei sofort.
 
@@ -802,7 +804,7 @@ Außerdem gilt:
 
 Unter *Einstellungen → Active Directory* schreibt Kartei alle Kontakte als AD-Kontaktobjekte (`objectClass: contact`) in eine OU. Jedes System, das Kontakte aus dem Active Directory liest, kann sie nutzen – etwa die Anruferkennung einer Telefonanlage oder das Adressbuch eines Kommunikations-Clients.
 
-![Reiter Active Directory](../img/de/settings-ad.png)
+![Bereich Active Directory](../img/de/settings-ad.png)
 
 ### So arbeitet der Sync
 
@@ -850,7 +852,7 @@ Kartei bringt einen schreibgeschützten CardDAV-Server mit einem Adressbuch mit,
 > Haben alle Telefonbenutzer ein Exchange-Online-Postfach, deckt der [Outlook-/Exchange-Sync](#outlook-sync) iPhones und Android-Telefone gleichermaßen ab, und CardDAV kann ausgeschaltet bleiben. CardDAV ist für Telefone ohne eigenes Postfach (Sammel- oder Pooltelefone, Benutzer außerhalb der Sync-Gruppe), für Installationen ohne Microsoft 365 und für ein zentrales, schreibgeschütztes Adressbuch statt einer Kopie in jedem Postfach. Außerdem behält es iPhone-Details wie eigene Telefonbezeichnungen, phonetische Namen und Beziehungen, die in Outlook-Kontakten nur als Notiz landen.
 {: .tip}
 
-![Reiter CardDAV](../img/de/settings-carddav.png)
+![Bereich CardDAV](../img/de/settings-carddav.png)
 
 ### Einrichten
 
@@ -904,7 +906,7 @@ Der Relay ist dasselbe Image mit anderen Einstellungen (`docker build --target r
 4. *TLS*: Mit *TLS-Zertifikat prüfen* (Standard) prüft Kartei das Zertifikat des Relays gegen die System-CAs oder, falls eingetragen, gegen das *CA-Zertifikat* (PEM) deiner internen CA. Schalte die Prüfung nur für Tests ab.
 5. Klick auf *Speichern & testen*: Kartei erreicht den Relay und prüft das Token. Dann *Zum Relay übertragen* anhaken, *Max. Löschungen (%)* einstellen und *Speichern*.
 6. Nimm den Haken bei *Eingebauter CardDAV-Server aktiv* heraus. Kartei meldet unter `/carddav/` dann „nicht gefunden“, so nutzen Telefone nicht versehentlich den internen Server. (Beides gleichzeitig geht auch, z. B. während einer Umstellung.)
-7. Richte die Telefone mit der Adresse des Relays ein. Benutzername und Passwort sind die aus diesem Reiter; *Neues Passwort erzeugen* erreicht den Relay mit der nächsten Übertragung.
+7. Richte die Telefone mit der Adresse des Relays ein. Benutzername und Passwort sind die aus diesem Bereich; *Neues Passwort erzeugen* erreicht den Relay mit der nächsten Übertragung.
 
 **So funktioniert die Übertragung:** Bei jedem Export-Intervall (und etwa 10 Sekunden nach *Jetzt synchronisieren*) fragt der `exporter` den Relay, welche Karten er hat (UID und Version), schickt neue und geänderte Karten in Paketen von etwa 2 MB und die UIDs zum Löschen, und immer den aktuellen Benutzernamen und Passwort-Hash. Jeder Lauf vergleicht mit dem tatsächlichen Stand des Relays; auf dem Relay verlorene oder zusätzliche Karten werden also beim nächsten Lauf korrigiert. *Letzter Lauf* zeigt das Ergebnis.
 
@@ -956,7 +958,7 @@ Kartei schreibt alle Kontakte über Microsoft Graph in einen Kontaktordner (Stan
 
 Voraussetzungen: Exchange-Online-Postfächer (Microsoft 365) und eine App-Registrierung in Entra ID.
 
-![Reiter Outlook / Exchange](../img/de/settings-outlook.png)
+![Bereich Outlook / Exchange](../img/de/settings-outlook.png)
 
 ### App in Entra ID registrieren
 
@@ -1011,7 +1013,7 @@ Auf dem Telefon (iPhone oder Android) installieren die Benutzer die Outlook-App,
 
 Der Zuständige jedes Kontakts (das erste Feld vom Typ *Benutzer*, z. B. *Ansprechpartner intern* im Beispiel-Feldbestand) wird von Zeit zu Zeit gebeten zu prüfen, ob der Kontakt noch stimmt. Wie Prüfende antworten und wie Bearbeiter über Vorschläge entscheiden, steht im [Benutzerhandbuch](user.html).
 
-![Reiter Prüfung im Modus Fortlaufend](../img/de/settings-review-rolling.png)
+![Bereich Prüfung im Modus Fortlaufend](../img/de/settings-review-rolling.png)
 
 ### Prüfmodus
 
@@ -1060,7 +1062,7 @@ Kartei schickt nur Anzahl und Link, keine Kontaktdaten. Die Nachricht ist bis zu
 
 Unter *Einstellungen → E-Mail* legst du fest, wie Kartei seine E-Mails (neue Prüfungen, Erinnerungen, Vorschläge) verschickt und was darin steht. Solange kein Versandweg vollständig eingerichtet ist, verschickt Kartei keine E-Mails.
 
-![Reiter E-Mail](../img/de/settings-mail.png)
+![Bereich E-Mail](../img/de/settings-mail.png)
 
 ### Versand
 
@@ -1077,7 +1079,7 @@ Unter dem Hinweis wählst du einen von zwei Versandwegen:
 
 **Microsoft 365 (Exchange Online, OAuth2)**
 
-Kartei versendet über Microsoft Graph (`sendMail`) mit OAuth2 – ohne Passwort und ohne Basic Auth. Dafür nutzt es die App-Registrierung aus dem Reiter [Outlook / Exchange](#outlook-sync) (Mandanten-ID, Anwendungs-ID, Clientschlüssel); der Outlook-Sync selbst muss dafür nicht aktiv sein.
+Kartei versendet über Microsoft Graph (`sendMail`) mit OAuth2 – ohne Passwort und ohne Basic Auth. Dafür nutzt es die App-Registrierung aus dem Bereich [Outlook / Exchange](#outlook-sync) (Mandanten-ID, Anwendungs-ID, Clientschlüssel); der Outlook-Sync selbst muss dafür nicht aktiv sein.
 
 1. Gib der App-Registrierung die Microsoft-Graph-Anwendungsberechtigung `Mail.Send` und erteile die Administratorzustimmung.
 2. Beschränke die Berechtigung auf das sendende Postfach, z. B. mit einer Application Access Policy für eine E-Mail-aktivierte Sicherheitsgruppe, die nur dieses Postfach enthält (wie beim Outlook-Sync gezeigt), oder mit RBAC für Anwendungen. Ohne Beschränkung darf die App im Namen jedes Postfachs im Mandanten senden.
@@ -1111,7 +1113,7 @@ Jeder Empfänger bekommt den Text in seiner Sprache (oder in der Standardsprache
 
 ## Allgemeine Einstellungen {#allgemeine-einstellungen}
 
-![Reiter Allgemein](../img/de/settings-general.png)
+![Bereich Allgemein](../img/de/settings-general.png)
 
 | Einstellung | Bedeutung |
 |---|---|
@@ -1184,7 +1186,7 @@ Von Bearbeitern gelöschte Kontakte landen im Papierkorb (Benutzermenü → *Pap
 
 Andere Systeme können die Kontakte über eine REST-API mit einem Token lesen und mit einem Schreib-Token auch anlegen, ändern und löschen. Token sehen dieselben Felder wie ein Benutzer mit der Rolle Nur Lesen (Felder, die für *Alle* sichtbar sind). Die vollständige Referenz für Entwickler (Endpunkte, Delta-Abgleich, Werttypen, Fehler, Beispiele, OpenAPI-Datei) steht in `docs/API.md` im Kartei-Repository (auf Englisch).
 
-![Reiter API](../img/de/settings-api.png)
+![Bereich API](../img/de/settings-api.png)
 
 ### Token verwalten
 
@@ -1243,7 +1245,7 @@ Gib ein Schreib-Token nur Systemen, die wirklich Daten ändern müssen, und bewa
 
 Statt Kartei alle paar Minuten abzufragen, können andere Systeme sofort benachrichtigt werden: Ein **Webhook** schickt jede Änderung an einem Kontakt als HTTPS-Anfrage an die Adresse des Systems, signiert mit einem geheimen Schlüssel.
 
-![Webhooks im Reiter API](../img/de/settings-webhooks.png)
+![Webhooks im Bereich API](../img/de/settings-webhooks.png)
 
 1. Trag unter *Webhooks* einen *Namen* und die *Adresse (URL)* ein, die dir das empfangende System nennt.
 2. Wähl bei Bedarf die *Ereignisse* (angelegt, geändert, gelöscht, wiederhergestellt); keine Auswahl heißt alle.
@@ -1259,7 +1261,7 @@ Statt Kartei alle paar Minuten abzufragen, können andere Systeme sofort benachr
 
 *Einstellungen → Protokoll* listet jede Änderung mit Zeitpunkt, Benutzer, Aktion, Objekt und den geänderten Werten (alter Wert durchgestrichen → neuer Wert).
 
-![Reiter Protokoll](../img/de/settings-audit.png)
+![Bereich Protokoll](../img/de/settings-audit.png)
 
 - **Filtern** nach Bereich: *Alle Bereiche*, *Kontakt*, *Feld*, *Benutzer*, *Einstellungen*, *Export*, *API-Token*, *Anmeldungen*.
 - **Suchen** in Objektnamen und Benutzernamen (*Objekt oder Benutzer suchen …*).
@@ -1283,7 +1285,7 @@ Zu jedem Eintrag wird außerdem die IP-Adresse des Aufrufers gespeichert; nur Ad
 
 Anmeldeeinträge enthalten IP-Adressen und werden nach den Tagen gelöscht, die unter *Einstellungen → Monitoring & Protokolle → Anmeldeeinträge aufbewahren* eingestellt sind (Standard 90; 0 = für immer). Ein abgelehnter CardDAV- oder API-Zugang wird je Adresse und 15 Minuten einmal protokolliert, damit ein Telefon mit altem Passwort das Protokoll nicht füllt. Alle anderen Einträge bleiben erhalten.
 
-Nicht protokolliert werden die einzelnen Läufe von Exporten und Syncs (deren Ergebnis zeigt der jeweilige Reiter, das Log des `exporter` und der [Monitoring-Status](#monitoring)). Automatische Aktionen erscheinen als Benutzer *system*, Änderungen über ein Schreib-Token als `api:<Token-Name>`. Das Protokoll an ein SIEM senden: siehe [Syslog an das SIEM](#monitoring).
+Nicht protokolliert werden die einzelnen Läufe von Exporten und Syncs (deren Ergebnis zeigt der jeweilige Bereich, das Log des `exporter` und der [Monitoring-Status](#monitoring)). Automatische Aktionen erscheinen als Benutzer *system*, Änderungen über ein Schreib-Token als `api:<Token-Name>`. Das Protokoll an ein SIEM senden: siehe [Syslog an das SIEM](#monitoring).
 
 Jeder Kontakt hat außerdem einen eigenen Reiter *Verlauf*, siehe [Benutzerhandbuch](user.html).
 
@@ -1291,7 +1293,7 @@ Jeder Kontakt hat außerdem einen eigenen Reiter *Verlauf*, siehe [Benutzerhandb
 
 *Einstellungen → Monitoring & Protokolle* zeigt den Zustand von Kartei und seinen Hintergrundaufgaben, gibt Monitoring-Systemen Zugriff darauf und sendet Protokolleinträge an dein SIEM.
 
-![Reiter Monitoring & Protokolle](../img/de/settings-monitoring.png)
+![Bereich Monitoring & Protokolle](../img/de/settings-monitoring.png)
 
 ### Endpunkte
 
