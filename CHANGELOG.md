@@ -4,6 +4,10 @@ All notable changes to Kartei are listed here. The format follows [Keep a Change
 
 ## [Unreleased]
 
+### Changed
+
+- **Releases:** beta tags (e.g. `v1.2.0-beta`) are now published as regular GitHub releases and marked as latest, instead of as pre-releases.
+
 ## [0.9.1-beta] – 2026-11-26
 
 New in this release:

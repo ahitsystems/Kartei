@@ -1,4 +1,4 @@
-# Release (images for linux/amd64 and linux/arm64): push a tag like v1.2.3 (or v1.2.3-beta: a pre-release, without the 1.2 / 1 image tags). Publishes both images to the GitHub container registry and creates the
+# Release (images for linux/amd64 and linux/arm64): push a tag like v1.2.3 (or v1.2.3-beta: also a regular release, but without the 1.2 / 1 image tags). Publishes both images to the GitHub container registry and creates the
 # GitHub release with the manuals as PDF, openapi.yaml and SBOMs (SPDX, CycloneDX) for the source tree and both images.
 name: Release
 
@@ -117,5 +117,5 @@ jobs:
           # the version's section of CHANGELOG.md, followed by GitHub's generated notes (empty section: generated notes only)
           awk -v v="## [${VERSION#v}]" 'index($0, v) == 1 {on = 1; next} /^## \[/ {on = 0} on' CHANGELOG.md > notes.md
           gh release view "$VERSION" >/dev/null 2>&1 || gh release create "$VERSION" --verify-tag --generate-notes --notes-file notes.md \
-            --title "Kartei ${VERSION#v}" $([[ $VERSION == *-* ]] && echo --prerelease)
+            --title "Kartei ${VERSION#v}"
           gh release upload "$VERSION" dist/* --clobber
