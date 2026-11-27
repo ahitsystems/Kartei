@@ -1153,6 +1153,24 @@ Ein Klick auf eine Telefonnummer öffnet einen `tel:`-Link, den das Softphone od
 
 Mit beiden wird `+49 511 1234567` zu `tel:000495111234567`, eine national gespeicherte `0511 1234567` zu `tel:005111234567`. Durchwahlen ohne führende 0 bleiben unverändert, damit interne Anrufe weiter funktionieren. Erlaubt sind bis zu vier Ziffern, `*` und `#`. Beide leer (Standard): Die Nummer wird gewählt, wie sie gespeichert ist. Die Einstellung gilt für alle Benutzer und nur für die Links; gespeicherte Nummern, CardDAV, Telefonbücher und Exporte bleiben unverändert.
 
+Sie gilt auch für die *Telefonansicht*, die jeder Benutzer oben rechts für sich einschalten kann: Favoriten als Kurzwahl-Kacheln, Kontakte nur mit ihren Rufnummern (siehe Benutzerhandbuch). Einrichten musst du dafür nichts.
+
+#### Kontakt bei eingehendem Anruf öffnen
+
+Kartei öffnet zu einer Rufnummer den passenden Kontakt unter `https://<Kartei-Adresse>/call/<Rufnummer>`. Die Nummer darf in jeder Schreibweise kommen (`+49 511 1234567`, `05111234567`, `0049…`). Passt genau ein Kontakt, öffnet er sich; die exakt gleiche Nummer hat Vorrang, damit die Zentrale die Firma öffnet und nicht eine der Durchwahlen. Sonst zeigt die Liste die Treffer, und die Nummer steht im Suchfeld. Ist die *Telefonansicht* eingeschaltet, öffnet sich der Kontakt dort. Nicht angemeldete Benutzer melden sich erst an.
+
+![Ein Anruf von der Zentrale öffnet die Firma mit ihren Personen (Telefonansicht)](../img/de/phone-view-call.png)
+
+**SwyxIt!:** Die *SwyxIt! Web Extension* öffnet bei Ereignissen eine Webseite. Lege im Skin-Editor für das Ereignis *eingehender Ruf* diese URL fest:
+
+```
+https://kartei.example.com/call/%SelLinePeernumberPublicFormat%
+```
+
+Die genauen Namen der Ereignisse und Variablen unterscheiden sich zwischen SwyxIt!-Versionen; maßgeblich ist die Hilfe deiner Version. SwyxIt! muss dafür auf dem Arbeitsplatz laufen. Die URL öffnet SwyxIt! im Browser des Arbeitsplatzes, nicht die Telefonanlage: Kartei muss also nur vom PC aus erreichbar sein, wie bei der normalen Arbeit. Das funktioniert auch mit einer Swyx-Anlage in der Cloud, die Kartei selbst nicht erreicht.
+
+**Yealink-Tischtelefone allein** reichen dafür nicht: Ihre *Action URL* schickt das Telefon an einen Server, sie öffnet keinen Browser auf dem PC.
+
 ## Datenqualität und Dubletten
 
 Admins und Bearbeiter finden *Datenqualität* und *Dubletten* im Benutzermenü und auf der Startseite:

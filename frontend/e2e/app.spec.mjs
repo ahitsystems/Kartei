@@ -204,6 +204,58 @@ test.describe('finding contacts', () => {
     await expect(page.getByRole('heading', { name: `${p.first_name} ${p.last_name}` })).toBeVisible()
   })
 
+  test('phone view: speed dial from favorites or a saved filter, recently dialled, a contact with only its numbers', async ({ as }) => {
+    const page = await as('kkramer')
+    const boot = await page.api('get', '/api/bootstrap')
+    const p = boot.records.find((r) => r.kind === 'person' && r.data.phone_work && !boot.favorites.includes(r.uid))
+    const num = new RegExp(p.data.phone_work.replace(/[+]/g, '\\+'))
+    await page.api('post', '/api/me/favorite', { uid: p.uid, on: true })
+    await page.goto('/')
+    const toggle = page.getByRole('switch', { name: 'Phone view' })
+    await toggle.click()
+    await expect(toggle).toHaveAttribute('aria-checked', 'true')
+    const dial = page.getByRole('link', { name: num }).first()
+    await expect(dial).toHaveAttribute('href', /^tel:/)
+    // a click dials (tel: link, kept from navigating here) and lands in "Recently dialled"
+    await page.evaluate(() => document.addEventListener('click', (e) => e.target.closest('a[href^="tel:"]') && e.preventDefault()))
+    await dial.click()
+    await expect(page.locator('.calls li').first()).toContainText(p.last_name)
+    // another list: a saved filter instead of the favorites
+    const list = page.getByRole('combobox', { name: 'List for speed dial' })
+    await list.selectOption({ label: boot.filters[0].name })
+    await expect(page.locator('.tile').first()).toBeVisible()
+    await list.selectOption({ label: 'Favorites' })
+    // the switch is remembered on this device; a contact shows its numbers, no tabs
+    await page.goto(`/person/${p.uid}`)
+    await expect(page.getByRole('heading', { name: `${p.first_name} ${p.last_name}` })).toBeVisible()
+    await expect(page.getByRole('link', { name: num })).toHaveAttribute('href', /^tel:/)
+    await expect(page.getByRole('navigation', { name: 'Views' })).toHaveCount(0)
+    await toggle.click()
+    await expect(page.getByRole('button', { name: 'History' })).toBeVisible()
+    await page.api('post', '/api/me/favorite', { uid: p.uid, on: false })
+  })
+
+  test('phone view: an incoming call opens the contact, a company lists its people, a typed number can be dialled', async ({ as }) => {
+    const page = await as('kkramer')
+    const recs = await page.records()
+    const co = recs.find((r) => r.kind === 'company' && r.data.company_phone && recs.some((x) => x.company === r.uid))
+    const staff = recs.find((r) => r.company === co.uid)
+    await page.goto('/')
+    await page.evaluate(() => localStorage.setItem('kartei:phone-view', '1'))
+    // the switchboard number is part of every extension: the exact number wins
+    await page.goto(`/call/${encodeURIComponent(co.data.company_phone)}`)
+    await expect(page).toHaveURL(new RegExp(`/company/${co.uid}`))
+    await expect(page.getByRole('heading', { name: co.name })).toBeVisible()
+    await expect(page.locator('.tile').filter({ hasText: staff.last_name }).first()).toBeVisible()
+    // an unknown number: no hits, but a Dial button in the search
+    await page.goto('/call/%2B4930999999')
+    await expect(page).toHaveURL(/\/$/)
+    await expect(page.getByRole('link', { name: 'Dial' })).toHaveAttribute('href', /^tel:/)
+    // not outside the phone view
+    await page.getByRole('switch', { name: 'Phone view' }).click()
+    await expect(page.getByRole('link', { name: 'Dial' })).toHaveCount(0)
+  })
+
   test('umlauts and spelling variants find the same contacts', async ({ as }) => {
     const page = await as('kkramer')
     await page.goto('/')

@@ -97,7 +97,7 @@ Under **My account** → **Notifications** you switch them on or off for the dev
 
 ### The screen layout
 
-- **Top bar:** search box, the sync button (**Sync now**), for maintainers the **New** button, and the user menu.
+- **Top bar:** search box, the sync button (**Sync now**), the [phone view](#phone-view) switch, for maintainers the **New** button, and the user menu.
 - **Left:** the contact list with the list switch, the filters and the list tools.
 - **Right:** the selected contact or, if none is selected, your dashboard.
 
@@ -244,6 +244,29 @@ When no contact is selected, the right side shows your dashboard:
 ![Dashboard of a Read only user](../img/en/dashboard-read.png)
 
 Recently viewed contacts and favorites are stored with your account, so you see the same ones on every device. Click the **Kartei** logo to return to the dashboard at any time. At the bottom, maintainers see a reminder of the keyboard shortcuts.
+
+## Phone view {#phone-view}
+
+If you make a lot of calls, e.g. at reception or the switchboard, switch Kartei to a view for quick dialling: click the headset (**Phone view**) at the top right next to **Sync now**. Click it again to switch back. The switch applies to this browser on this device and stays on until you turn it off.
+
+![Phone view: favorites as speed dial, recent calls on the right](../img/en/phone-view.png)
+
+- **Dashboard:** instead of the normal dashboard you see your **favorites** as tiles. Every phone number is a large button; a click dials it. A click on the name opens the contact.
+- **Another list:** with the selector above the tiles you show the contacts of a [saved filter](#saved-filters) instead of the favorites, e.g. a filter *Switchboard* or *Emergency numbers* shared with you. The tiles follow the filter: when a contact changes, it appears or disappears by itself. Kartei remembers the choice in this browser.
+- **Recently dialled:** the column on the right lists the last ten numbers you clicked in the phone view, with contact, kind of number and time. Click a number to dial it again. It only records the click, not whether a call took place, and is kept in this browser only.
+- **Contact:** an open contact shows only its name, company and phone numbers as large buttons, without address, tabs or other fields. Use the star to add or remove it as a favorite.
+- **Company:** an open company shows, below its own numbers, all its people with their extensions, handy for transferring calls.
+- **Search and list** on the left work as always, including the shortcuts <kbd>/</kbd>, <kbd>↑</kbd> <kbd>↓</kbd> and <kbd>Enter</kbd>.
+- **Typing a number:** when you type a phone number into the search box, a **Dial** button appears in it, even if the number isn't in Kartei.
+- **Incoming calls:** if your administrator set it up, your phone software opens the matching contact in Kartei when a call comes in. With several hits the list shows them; with none, the number is in the search box for calling back.
+
+![Incoming call from a company's main number: the company with its people](../img/en/phone-view-call.png)
+
+![Incoming call from an unknown number: the number in the search box with the Dial button](../img/en/phone-view-call-unknown.png)
+
+![A contact in the phone view](../img/en/phone-view-contact.png)
+
+To edit a contact or see all its fields, turn the phone view off for a moment. Numbers are dialled like everywhere else in Kartei through a `tel:` link, i.e. by the softphone or phone system your computer uses for that. There is no phone view on phones; Kartei always shows the normal view there.
 
 ## Viewing a contact
 
