@@ -123,6 +123,9 @@ Click into the search box or press <kbd>/</kbd> and start typing. The list filte
 - **Upper/lower case and umlauts** don't matter: `lubeck`, `luebeck` and `Lübeck` all find Lübeck.
 - **Phone numbers** are found in any format: `0511 1000-12`, `+49 511 100012` and `051110001` all find the same number. Part of a number is enough, e.g. just the extension.
 - The search also covers the person's company name, so `musterfirma` lists the company *Musterfirma Energie AG* and its employees.
+- **Similar names:** when there are only a few hits (under ten), Kartei adds names that sound alike or are one typo away, marked *similar*: `Maier` also finds Meyer, `Schmitt` Schmidt, `Fsicher` Fischer. Handy when you only heard a name on the phone. Only names of persons and companies are compared. Similar hits don't count as hits and don't go into exports, the phone list or bulk edit.
+
+![Similar names for "Fsicher"](../img/en/search-similar.png)
 
 Press <kbd>Enter</kbd> to open the first result, and <kbd>↑</kbd> <kbd>↓</kbd> to move through the results. <kbd>Esc</kbd> clears the search; pressing it again leaves the search box.
 

@@ -123,6 +123,9 @@ Klick ins Suchfeld oder drück <kbd>/</kbd> und tipp los. Die Liste filtert sich
 - **Groß-/Kleinschreibung und Umlaute** spielen keine Rolle: `lubeck`, `luebeck` und `Lübeck` finden alle Lübeck.
 - **Telefonnummern** findest du in jeder Schreibweise: `0511 1000-12`, `+49 511 100012` und `051110001` finden dieselbe Nummer. Ein Teil reicht, zum Beispiel nur die Durchwahl.
 - Auch der Firmenname einer Person wird durchsucht: `musterfirma` zeigt die Firma *Musterfirma Energie AG* und ihre Mitarbeiter.
+- **Ähnliche Namen:** Gibt es nur wenige Treffer (unter zehn), hängt Kartei Namen an, die ähnlich klingen oder einen Tippfehler entfernt sind, markiert mit *ähnlich*: `Maier` findet auch Meyer, `Schmitt` Schmidt, `Fsicher` Fischer. Praktisch, wenn man einen Namen am Telefon nur gehört hat. Verglichen werden nur Namen von Personen und Firmen. Ähnliche Treffer zählen nicht zur Trefferzahl und landen nicht in Exporten, der Telefonliste oder der Mehrfachbearbeitung.
+
+![Ähnliche Namen zu „Fsicher“](../img/de/search-similar.png)
 
 Mit <kbd>Enter</kbd> öffnest du den ersten Treffer, mit <kbd>↑</kbd> <kbd>↓</kbd> blätterst du durch die Treffer. <kbd>Esc</kbd> leert die Suche, ein zweites <kbd>Esc</kbd> verlässt das Suchfeld.
 

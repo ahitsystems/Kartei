@@ -72,7 +72,7 @@ export function buildIndex(records: Rec[], fields: Field[], byUid: Map<string, R
         } else parts.push(String(v))
       }
       const text = parts.join(' ')
-      return { rec, hay: fold(text) + ' ' + expand(text), tel: tel.join(' '), names, codes: names.map(koelner) }
+      return { rec, hay: fold(text) + ' ' + expand(text), tel: tel.join(' '), names, codes: names.map(codeOf) }
     })
     .sort((a, b) => cmp(a.rec, b.rec))
 }
@@ -88,6 +88,10 @@ export function matcher(query: string) {
 // ------------------------------------------------------------- similar names (phone view, reception)
 // Names are heard, not read: "Meier" should find Meyer, "Fsicher" Fischer. Shown after the real hits, never part of
 // them (counts, exports, bulk edit and saved filters stay exact). Only names, so the noise stays small.
+
+// names repeat a lot (first names, surnames, company words): each word's code is computed once
+const codes = new Map<string, string>()
+const codeOf = (w: string) => { let c = codes.get(w); if (c === undefined) codes.set(w, (c = koelner(w))); return c }
 
 /** Kölner Phonetik: German sound code of a word. Meier, Mayer, Maier, Meyer -> "67"; Schmidt, Schmitt -> "862" */
 export function koelner(word: string): string {
@@ -154,13 +158,20 @@ export function similarMatcher(query: string): ((x: Indexed) => boolean) | null 
     return { f, exact: matcher(tok), code: word ? koelner(f) : '', max: !word ? -1 : f.length >= 8 ? 2 : f.length >= 4 ? 1 : 0 }
   })
   if (!tokens.some((t) => t.code)) return null
-  const like = (t: (typeof tokens)[number], x: Indexed, i: number) =>
-    (t.code.length > 1 && x.codes[i] === t.code) || (t.max > 0 && typoDistance(t.f, x.names[i], t.max) <= t.max)
+  // per query, each distinct name word is compared once, not once per record that has it
+  const seen = tokens.map(() => new Map<string, boolean>())
+  const like = (ti: number, x: Indexed, i: number) => {
+    const t = tokens[ti], w = x.names[i]
+    let v = seen[ti].get(w)
+    if (v === undefined) seen[ti].set(w, (v = (t.code.length > 1 && x.codes[i] === t.code) || (t.max > 0 && typoDistance(t.f, w, t.max) <= t.max)))
+    return v
+  }
   return (x) => {
     let similar = false
-    for (const t of tokens) {
+    for (let ti = 0; ti < tokens.length; ti++) {
+      const t = tokens[ti]
       if (t.exact(x)) continue
-      if (!t.code || !x.names.some((_, i) => like(t, x, i))) return false
+      if (!t.code || !x.names.some((_, i) => like(ti, x, i))) return false
       similar = true
     }
     return similar

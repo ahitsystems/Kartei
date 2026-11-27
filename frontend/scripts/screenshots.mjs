@@ -42,6 +42,8 @@ const SHOTS = [
       await p.locator('.filters li').filter({ has: p.locator('.pub') }).locator('button:has(.lucide-share-2)').click(); await wait(400)
     }, after: async (ctx, h) => { await api(ctx, 'patch', `/api/filters/${h.published}`, { outlook_folder: false, carddav_book: false }) } },
   { name: 'search', user: 'admin', path: '/', steps: async (p) => { await p.keyboard.press('/'); await p.keyboard.type('koch'); await wait(300) } },
+  // names heard on the phone: "Fsicher" finds the Fischers, marked as similar
+  { name: 'search-similar', user: 'kkramer', path: '/', steps: async (p) => { await p.locator('input[type=search]').fill('Fsicher'); await wait(400) } },
   { name: 'filter-menu', user: 'admin', path: '/', steps: open('[popovertarget="filter-menu"]') },
   { name: 'advanced-filter', user: 'mmuster', path: '/', steps: async (p) => {
       await p.locator('[popovertarget="adv-menu"]').first().click(); await wait(300)

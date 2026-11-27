@@ -36,6 +36,7 @@
   import { setTheme, theme } from './lib/theme.svelte'
   import { isMulti, isSingle, type Kind, type ListState, type Rec } from './lib/types'
   import { fmt } from './lib/format'
+  import { similarMatcher } from './lib/search'
 
   store.start()
 
@@ -163,6 +164,16 @@
                           store.user?.username, new Date(), { review: reviewUids, proposals: proposalUids })
     return store.index.filter(test)
   })
+  // names that sound like the search or are one typo away ("Maier" -> Meyer, "Fsicher" -> Fischer): listed after the
+  // real hits with a hint, only when those are few. Never part of results: counts, exports and bulk edit stay exact
+  const similar = $derived.by(() => {
+    const like = results.length < 10 ? similarMatcher(query) : null
+    if (!like) return []
+    const rest = listTest({ q: '', scope: activeScope, kind, filters: activeFilters, adv }, store.fields,
+                          store.user?.username, new Date(), { review: reviewUids, proposals: proposalUids })
+    const hit = new Set(results.map((x) => x.rec.uid))
+    return store.index.filter((x) => !hit.has(x.rec.uid) && like(x) && rest(x))
+  })
   const counts = $derived.by(() => {
     const rs = store.records.filter((r) => inScope(r, activeScope))
     return { person: rs.filter((r) => r.kind === 'person').length, company: rs.filter((r) => r.kind === 'company').length }
@@ -193,9 +204,9 @@
   }
 
   function step(delta: number) {
-    if (!results.length) return
-    const i = results.findIndex((x) => x.rec.uid === selected)
-    const next = results[Math.max(0, Math.min(results.length - 1, i < 0 ? 0 : i + delta))]
+    if (!shown.length) return
+    const i = shown.findIndex((x) => x.rec.uid === selected)
+    const next = shown[Math.max(0, Math.min(shown.length - 1, i < 0 ? 0 : i + delta))]
     open(next.rec, true)
   }
 
@@ -212,9 +223,9 @@
       if (view.name !== 'list' && view.name !== 'record') return
       e.preventDefault()
       step(e.key === 'ArrowDown' ? 1 : -1)
-    } else if (e.key === 'Enter' && inSearch && results.length) {
+    } else if (e.key === 'Enter' && inSearch && shown.length) {
       e.preventDefault()
-      open(selected && results.some((x) => x.rec.uid === selected) ? current! : results[0].rec)
+      open(selected && shown.some((x) => x.rec.uid === selected) ? current! : shown[0].rec)
       searchEl?.blur()
     } else if (e.key === 'Escape' && inSearch) {
       if (query) query = ''
@@ -261,6 +272,8 @@
 
   // selection mode for bulk edits: null = off
   let picked = $state.raw<Set<string> | null>(null)
+  /** what the list shows and the arrow keys walk through; selection mode: only the real hits */
+  const shown = $derived(picked ? results : [...results, ...similar])
   let anchor: string | null = null
   function onpick(uid: string, shift: boolean) {
     picked = pick(picked ?? new Set(), results.map((x) => x.rec.uid), uid, anchor, shift)
@@ -397,7 +410,7 @@
             </div>
           {/if}
           <div class="listbar">
-            <span class="count tabular">{t('list.count', { n: results.length })}</span>
+            <span class="count tabular">{t('list.count', { n: results.length })}{similar.length && !picked ? ` · ${t('list.similar_count', { n: similar.length })}` : ''}</span>
             <button class="btn icon sm ghost" popovertarget="sort-menu" title={t('sort.title')} aria-label={t('sort.title')}><ArrowDownUp size={15} /></button>
             <button class="btn icon sm ghost" popovertarget="saved-menu" title={t('saved.title')} aria-label={t('saved.title')}><Bookmark size={15} /></button>
             <button class="btn icon sm ghost" popovertarget="export-menu" title={t('dl.title')} aria-label={t('dl.title')} disabled={!results.length}><Download size={15} /></button>
@@ -419,7 +432,7 @@
               {/each}
             </nav>
           {/if}
-          <div class="list"><RecordList items={results} {selected} {query} picked={store.canEdit ? picked : null} {onpick} /></div>
+          <div class="list"><RecordList items={shown} similarFrom={results.length} {selected} {query} picked={store.canEdit ? picked : null} {onpick} /></div>
         </aside>
       {/if}
       <main class="pane scroll">
