@@ -3,7 +3,19 @@
 const CACHE = 'kartei-v1'
 const SHARE = 'kartei-share'  // what another app shared (Web Share Target), until the /share page picks it up
 
-self.addEventListener('install', () => self.skipWaiting())
+// the app shell and its assets right away: the first visit isn't served by this worker yet (it installs during it),
+// and signing in doesn't load a page, so without this the app only started offline after a second visit
+self.addEventListener('install', (e) => e.waitUntil((async () => {
+  try {
+    const c = await caches.open(CACHE)
+    const res = await fetch('/', { credentials: 'same-origin' })
+    if (!res.ok) return
+    const html = await res.clone().text()
+    await c.put('/', res)
+    await c.addAll([...new Set([...html.matchAll(/(?:src|href)="(\/static\/assets\/[^"]+)"/g)].map((m) => m[1]))])
+  } catch { /* offline or a failed asset: the next visit caches it as before */ }
+  await self.skipWaiting()
+})()))
 
 self.addEventListener('activate', (e) =>
   e.waitUntil((async () => {

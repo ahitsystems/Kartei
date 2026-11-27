@@ -41,6 +41,10 @@
   <form class="card" onsubmit={submit}>
     <div class="brand"><img class="mark" src={logo} alt="" />Kartei</div>
     <h1>{t('login.title')}</h1>
+    {#if store.offline}
+      <!-- the server is unreachable and there is no recent offline copy: signing in can't work right now -->
+      <p class="offline" role="status">{t('login.offline')}</p>
+    {/if}
     {#if needCode}
       <p class="muted">{t('totp.login_hint')}</p>
       <label class="label" for="c">{t('totp.code')}</label>
@@ -70,6 +74,7 @@
 </div>
 
 <style>
+  .offline { margin: 0; padding: 10px 12px; border-radius: 8px; background: var(--warn-soft); color: var(--text); font-size: 13px; }
   .or { display: flex; align-items: center; gap: 10px; color: var(--muted); font-size: 12px; margin: 4px 0; }
   .or::before, .or::after { content: ''; flex: 1; border-top: 1px solid var(--border); }
   .sso { justify-content: center; gap: 10px; }

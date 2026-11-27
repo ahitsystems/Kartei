@@ -15,7 +15,7 @@ const test = base.extend({
       const ctx = await browser.newContext(options)
       contexts.push(ctx)
       ctx.on('weberror', (e) => errors.push(`${user}: ${e.error().message}`))
-      ctx.on('console', (m) => { if (m.type() === 'error' && !/status of 4\d\d/.test(m.text())) errors.push(`${user}: ${m.text()}`) })
+      ctx.on('console', (m) => { if (m.type() === 'error' && !/status of 4\d\d|ERR_INTERNET_DISCONNECTED/.test(m.text())) errors.push(`${user}: ${m.text()}`) })
       const csrf = async () => (await ctx.cookies()).find((c) => c.name === 'csrftoken')?.value ?? ''
       const call = async (method, path, data) => {
         const res = await ctx.request[method](path, { data, headers: { 'X-CSRFToken': await csrf(), Referer: test.info().project.use.baseURL } })
@@ -977,6 +977,30 @@ test.describe('deleting', () => {
     await expect.poll(live).toBe(0)
     await page.getByRole('button', { name: 'Undo' }).click()
     await expect.poll(live).toBe(team.length)
+  })
+})
+
+test.describe('offline', () => {
+  test('after one visit the app starts without the server; an old copy only offers the sign-in, saying why', async ({ as }) => {
+    const page = await as('kkramer')
+    const p = (await page.records()).find((r) => r.kind === 'person')
+    await page.goto('/')  // the only visit: the service worker installs during it
+    await expect(list(page)).toBeVisible()
+    await page.waitForFunction(() => navigator.serviceWorker?.controller)
+    // the offline copy is written after the sync
+    const saved = () => page.evaluate(() => new Promise((res) => { const r = indexedDB.open('keyval-store'); r.onsuccess = () => {
+      try { const q = r.result.transaction('keyval').objectStore('keyval').get('kartei:boot2'); q.onsuccess = () => res(!!q.result) }
+      catch { res(false) } } }))
+    await expect.poll(saved, { timeout: 10_000 }).toBe(true)
+    await page.context().setOffline(true)  // the server is gone
+    await page.reload()
+    await expect(page.getByTitle('Offline – showing cached data')).toBeVisible()
+    await expect(row(page, p.last_name).first()).toBeVisible()
+    // more than 24 hours since the last sync: a shared PC must not keep showing the last user's contacts
+    await page.addInitScript(() => { const now = Date.now; Date.now = () => now() + 25 * 3600_000 })
+    await page.reload()
+    await expect(page.getByRole('status')).toContainText("The server can't be reached")
+    await page.context().setOffline(false)
   })
 })
 
