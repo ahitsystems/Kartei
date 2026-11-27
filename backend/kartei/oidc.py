@@ -21,7 +21,7 @@ from django.core.cache import cache
 from django.db.models import Q
 
 from .graph import GraphError, http
-from .models import Profile, Settings
+from .models import Profile
 
 CLAIMS = ("preferred_username", "email", "upn")
 

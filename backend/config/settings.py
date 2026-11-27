@@ -91,6 +91,8 @@ TIME_ZONE = "Europe/Berlin"
 CACHES = {"default": {"BACKEND": "django.core.cache.backends.locmem.LocMemCache"} if TESTING else
           {"BACKEND": "django.core.cache.backends.filebased.FileBasedCache",
            "LOCATION": os.environ.get("CACHE_DIR", os.path.join(tempfile.gettempdir(), "kartei-cache"))}}
+if TESTING:  # PBKDF2's deliberate slowness dominated the test run
+    PASSWORD_HASHERS = ["django.contrib.auth.hashers.MD5PasswordHasher"]
 USE_I18N = True
 USE_TZ = True
 

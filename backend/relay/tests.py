@@ -8,7 +8,7 @@ import json
 import re
 from datetime import timedelta
 
-from django.contrib.auth.hashers import make_password
+from django.contrib.auth.hashers import check_password, make_password
 from django.test import TestCase, override_settings
 from django.utils import timezone
 
@@ -76,7 +76,7 @@ class PushTests(RelayTestBase):
         self.push({"credentials": self.cred("first")})
         self.assertEqual(Book.get().username, "carddav")
         self.push({"cards": [card(A)]})  # without credentials: login unchanged
-        self.assertTrue(Book.get().password_hash.startswith("pbkdf2"))
+        self.assertTrue(check_password("first", Book.get().password_hash))
         self.push({"credentials": {"username": "carddav", "password_hash": ""}})  # empty hash locks phones out
         self.assertEqual(Book.get().password_hash, "")
 

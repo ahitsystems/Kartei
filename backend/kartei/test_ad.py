@@ -12,7 +12,7 @@ from ldap.dn import str2dn
 from . import adsync, ldapusers
 from .auth import role_of
 from .management.commands import export_loop
-from .models import AuditEntry, FieldDef, Profile, Record, Role, Settings
+from .models import AuditEntry, Profile, Record, Role, Settings
 from .tests import ApiTestBase, example
 
 OU = "OU=Kartei,DC=ex,DC=local"
