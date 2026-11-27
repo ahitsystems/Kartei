@@ -1432,6 +1432,25 @@ class SeedDemoTests(TestCase):
         self.assertIn("Kunde", [o["value"] for o in kw.options])
         with self.assertRaises(CommandError):  # never on top of real data
             call_command("seed_demo", stdout=io.StringIO())
+        with self.assertRaises(CommandError):  # --reset wipes everything: development only
+            call_command("seed_demo", reset=True, stdout=io.StringIO())
+        self.assertEqual(Record.objects.filter(kind="company").count(), 6)
+
+    def test_seed_demo_reset(self):
+        import io
+        from django.core.management import call_command
+        from django.test import override_settings
+        call_command("seed_demo", password="demo-pass-123", stdout=io.StringIO())
+        Record.objects.filter(kind="company").first().delete()  # what a test run or a screenshot leaves behind
+        User.objects.create_user("leftover")
+        with override_settings(DEBUG=True), mock.patch.dict(os.environ, {}, clear=False):
+            os.environ.pop("ADMIN_USERNAME", None)
+            os.environ.pop("ADMIN_PASSWORD", None)
+            call_command("seed_demo", reset=True, password="demo-pass-123", stdout=io.StringIO())
+        self.assertEqual(Record.objects.filter(kind="company").count(), 6)  # fresh again
+        self.assertFalse(User.objects.filter(username="leftover").exists())
+        self.assertTrue(User.objects.get(username="admin").check_password("admin12345"))
+        self.assertTrue(User.objects.get(username="kkramer").check_password("demo-pass-123"))
 
 
 class CsvReadTests(ApiTestBase):

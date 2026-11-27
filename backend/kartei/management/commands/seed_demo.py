@@ -1,6 +1,8 @@
 """Sample data for trying Kartei and for the manual screenshots: fictional companies, persons, users, reviews,
-proposals, favorites and saved filters. Deterministic (fixed random seed), refuses to run when contacts exist."""
+proposals, favorites and saved filters. Deterministic (fixed random seed), refuses to run when contacts exist.
+--reset (development only, DEBUG=1): empty the whole database first and set it up again like a fresh install."""
 import json
+import os
 import random
 import secrets
 from datetime import timedelta
@@ -8,6 +10,7 @@ from pathlib import Path
 
 from django.conf import settings as dj
 from django.contrib.auth.models import User
+from django.core.management import call_command
 from django.core.management.base import BaseCommand, CommandError
 from django.utils import timezone
 
@@ -46,10 +49,21 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser):
         parser.add_argument("--password", help="password for all demo users (default: random, printed once)")
+        parser.add_argument("--reset", action="store_true",
+                            help="development only (DEBUG=1): delete ALL data first, then init_app and the demo data; "
+                                 "admin from ADMIN_USERNAME/ADMIN_PASSWORD, default admin / admin12345")
 
-    def handle(self, *args, password=None, **opts):
+    def handle(self, *args, password=None, reset=False, **opts):
+        if reset:
+            if not dj.DEBUG:  # a typo on a production server must not wipe it
+                raise CommandError("--reset deletes all data and only runs with DEBUG=1 (development).")
+            call_command("flush", interactive=False, verbosity=0)
+            os.environ.setdefault("ADMIN_USERNAME", "admin")
+            os.environ.setdefault("ADMIN_PASSWORD", "admin12345")
+            call_command("init_app", stdout=self.stdout)
         if Record.objects.exists():
-            raise CommandError("Kartei already contains contacts; seed_demo only runs on an empty installation.")
+            raise CommandError("Kartei already contains contacts; seed_demo only runs on an empty installation "
+                               "(development: seed_demo --reset).")
         rnd = random.Random(42)
         res = import_fields(json.loads(FIELDS.read_text(encoding="utf-8")), apply=True)["fields"]
         self.stdout.write(f"fields: {sum(r['status'] == 'new' for r in res)} new")

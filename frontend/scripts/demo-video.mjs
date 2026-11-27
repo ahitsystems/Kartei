@@ -1,6 +1,6 @@
 // The animated demo in the README: a scripted session with a visible mouse pointer, recorded and turned into an animated WebP.
 // Usage: node scripts/demo-video.mjs [--base http://localhost:8000] [--password demo12345] [--out ../manuals/img/en/demo.webp]
-// Expects a fresh database with `manage.py seed_demo` data, and ffmpeg on the PATH. Changes one job title.
+// Expects a fresh database with `manage.py seed_demo` data (again: `seed_demo --reset`), and ffmpeg on the PATH. Changes one job title.
 import { chromium } from '@playwright/test'
 import { execFileSync } from 'node:child_process'
 import { mkdtempSync, rmSync, readdirSync } from 'node:fs'
