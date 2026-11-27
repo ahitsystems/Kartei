@@ -136,6 +136,26 @@ const SHOTS = [
       await p.locator('section.card').last().evaluate((s) => s.scrollIntoView({ block: 'end' })); await wait(200) } },
   { name: 'mobile', user: 'kkramer', path: '/', viewport: { width: 390, height: 844 } },
   { name: 'mobile-contact', user: 'kkramer', path: (h) => `/person/${h.person}`, viewport: { width: 390, height: 844 } },
+  // phone view: the switch is per device (localStorage), dial clicks are logged there too; tel: links must not navigate
+  { name: 'phone-view', user: 'kkramer', path: '/', steps: async (p) => {
+      await p.evaluate(() => { localStorage.setItem('kartei:phone-view', '1'); localStorage.removeItem('kartei:phone-view-calls') })
+      await p.reload(); await p.waitForLoadState('networkidle'); await wait(400)
+      await p.evaluate(() => document.addEventListener('click', (e) => e.target.closest('a[href^="tel:"]') && e.preventDefault()))
+      for (const i of [3, 0, 2]) { await p.locator('.tile .dial').nth(i).click(); await wait(200) }
+      await p.evaluate(() => localStorage.setItem('kartei:phone-view', '0')) } },
+  { name: 'phone-view-contact', user: 'kkramer', path: (h) => `/person/${h.person}`, steps: async (p) => {
+      await p.evaluate(() => localStorage.setItem('kartei:phone-view', '1'))
+      await p.reload(); await p.waitForLoadState('networkidle'); await wait(400)
+      await p.evaluate(() => localStorage.setItem('kartei:phone-view', '0')) } },
+  // an incoming call: the phone system (SwyxIt! Web Extension) opens /call/<number>; the company's main number opens the company with its people
+  { name: 'phone-view-call', user: 'kkramer', path: '/', steps: async (p, h) => {
+      await p.evaluate(() => localStorage.setItem('kartei:phone-view', '1'))
+      await p.goto(`${BASE}/call/${encodeURIComponent(h.batch.phone)}`); await p.waitForLoadState('networkidle'); await wait(600)
+      await p.evaluate(() => localStorage.setItem('kartei:phone-view', '0')) } },
+  { name: 'phone-view-call-unknown', user: 'kkramer', path: '/', steps: async (p) => {
+      await p.evaluate(() => localStorage.setItem('kartei:phone-view', '1'))
+      await p.goto(`${BASE}/call/${encodeURIComponent('+49 30 5550123')}`); await p.waitForLoadState('networkidle'); await wait(600)
+      await p.evaluate(() => localStorage.setItem('kartei:phone-view', '0')) } },
   { name: 'dashboard-admin', user: 'admin', path: '/' },
   { name: 'user-menu-admin', user: 'admin', path: '/', steps: open('[popovertarget="user-menu"]') },
   { name: 'dup-hint', user: 'mmuster', path: (h) => `/new/person?company=${h.dupCompany}`, steps: async (p) => {

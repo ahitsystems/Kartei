@@ -97,7 +97,7 @@ Unter **Mein Konto** → **Benachrichtigungen** schaltest du sie für das Gerät
 
 ### Der Bildschirmaufbau
 
-- **Oben:** Suchfeld, der Knopf **Jetzt synchronisieren**, für Bearbeiter der Knopf **Neu**, und das Benutzermenü.
+- **Oben:** Suchfeld, der Knopf **Jetzt synchronisieren**, der Schalter für die [Telefonansicht](#telefonansicht), für Bearbeiter der Knopf **Neu**, und das Benutzermenü.
 - **Links:** die Kontaktliste mit Listenumschalter, Filtern und Listenwerkzeugen.
 - **Rechts:** der ausgewählte Kontakt oder, wenn keiner ausgewählt ist, deine Startseite.
 
@@ -244,6 +244,29 @@ Ist kein Kontakt ausgewählt, siehst du rechts deine Startseite:
 ![Startseite mit der Rolle Nur Lesen](../img/de/dashboard-read.png)
 
 Zuletzt angesehene Kontakte und Favoriten hängen an deinem Konto – du siehst also auf jedem Gerät dieselben. Ein Klick auf das **Kartei**-Logo bringt dich jederzeit zur Startseite zurück. Bearbeiter sehen unten außerdem einen Hinweis auf die Tastenkürzel.
+
+## Telefonansicht {#telefonansicht}
+
+Wer viel telefoniert, z. B. am Empfang oder in der Zentrale, schaltet Kartei auf eine Ansicht zum schnellen Wählen um: Klick oben rechts neben **Jetzt synchronisieren** auf das Headset (**Telefonansicht**). Ein zweiter Klick schaltet zurück. Der Schalter gilt für diesen Browser und dieses Gerät und bleibt eingeschaltet, bis du ihn wieder ausschaltest.
+
+![Telefonansicht: Favoriten als Kurzwahl, rechts der Verlauf](../img/de/phone-view.png)
+
+- **Startseite:** Statt der normalen Startseite siehst du deine **Favoriten** als Kacheln. Jede Rufnummer ist ein großer Knopf, ein Klick wählt sie. Ein Klick auf den Namen öffnet den Kontakt.
+- **Andere Liste:** Über die Auswahl über den Kacheln zeigst du statt der Favoriten die Kontakte eines [gespeicherten Filters](#gespeicherte-filter), z. B. einen mit dir geteilten Filter *Zentrale* oder *Notfallnummern*. Die Kacheln folgen dem Filter: Ändert sich ein Kontakt, erscheint oder verschwindet er von selbst. Die Auswahl merkt sich Kartei in diesem Browser.
+- **Zuletzt gewählt:** In der Spalte rechts stehen die letzten zehn Nummern, die du in der Telefonansicht angeklickt hast, mit Kontakt, Art der Nummer und Uhrzeit. Ein Klick auf die Nummer wählt sie erneut. Der Verlauf merkt sich nur den Klick, nicht ob ein Gespräch zustande kam, und liegt nur in diesem Browser.
+- **Kontakt:** Ein geöffneter Kontakt zeigt nur Name, Firma und seine Rufnummern als große Knöpfe, ohne Adresse, Reiter und andere Felder. Mit dem Stern setzt oder entfernst du ihn als Favoriten.
+- **Firma:** Eine geöffnete Firma zeigt unter ihren eigenen Nummern alle Personen der Firma mit ihren Durchwahlen, praktisch zum Weiterverbinden.
+- **Suche und Liste** links funktionieren wie immer, auch die Tastenkürzel <kbd>/</kbd>, <kbd>↑</kbd> <kbd>↓</kbd> und <kbd>Enter</kbd>.
+- **Nummer eintippen:** Tippst du eine Rufnummer ins Suchfeld, erscheint darin der Knopf **Wählen**, auch wenn die Nummer in Kartei nicht vorkommt.
+- **Eingehende Anrufe:** Hat die Administration es eingerichtet, öffnet deine Telefonsoftware bei einem Anruf den passenden Kontakt in Kartei. Gibt es mehrere Treffer, zeigt die Liste sie; gibt es keinen, steht die Nummer im Suchfeld zum Zurückrufen.
+
+![Eingehender Anruf von der Zentrale einer Firma: die Firma mit ihren Personen](../img/de/phone-view-call.png)
+
+![Eingehender Anruf von einer unbekannten Nummer: die Nummer im Suchfeld mit dem Knopf Wählen](../img/de/phone-view-call-unknown.png)
+
+![Ein Kontakt in der Telefonansicht](../img/de/phone-view-contact.png)
+
+Zum Bearbeiten oder für alle Felder schaltest du die Telefonansicht kurz aus. Gewählt wird wie überall in Kartei über einen `tel:`-Link, also mit deinem Softphone oder der Telefonanlage, die dein Rechner dafür eingerichtet hat. Auf dem Handy gibt es die Telefonansicht nicht; dort zeigt Kartei immer die normale Ansicht.
 
 ## Einen Kontakt ansehen
 

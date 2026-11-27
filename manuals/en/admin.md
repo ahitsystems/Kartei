@@ -1151,6 +1151,24 @@ Clicking a phone number opens a `tel:` link that the softphone or phone system d
 
 With both, `+49 511 1234567` becomes `tel:000495111234567`, and a number stored nationally, `0511 1234567`, becomes `tel:005111234567`. Extensions without a leading 0 stay as they are, so internal calls keep working. Up to four digits, `*` and `#` are allowed. Both empty (default): the number is dialled as stored. The setting applies to all users and only to the links; stored numbers, CardDAV, phonebooks and exports stay unchanged.
 
+It also applies to the *phone view* that every user can turn on for themselves at the top right: favorites as speed-dial tiles, contacts with their phone numbers only (see the user manual). There is nothing to set up for it.
+
+#### Opening the contact for an incoming call
+
+Kartei opens the contact for a phone number at `https://<Kartei address>/call/<number>`. The number may come in any notation (`+49 511 1234567`, `05111234567`, `0049…`). If exactly one contact matches, it opens; the exact same number wins, so the switchboard number opens the company rather than one of its extensions. Otherwise the list shows the hits and the number is in the search box. With the *phone view* turned on, the contact opens there. Users who aren't signed in sign in first.
+
+![A call from the main number opens the company with its people (phone view)](../img/en/phone-view-call.png)
+
+**SwyxIt!:** the *SwyxIt! Web Extension* opens a web page on events. In the skin editor, set this URL for the *incoming call* event:
+
+```
+https://kartei.example.com/call/%SelLinePeernumberPublicFormat%
+```
+
+The exact names of events and variables differ between SwyxIt! versions; the help for your version is what counts. SwyxIt! has to run on the workstation for this. SwyxIt! opens the URL in the workstation's browser, not the phone system: Kartei only has to be reachable from the PC, as for normal work. This also works with a Swyx system in the cloud that can't reach Kartei itself.
+
+**Yealink desk phones on their own** can't do it: their *action URL* is sent by the phone to a server; it doesn't open a browser on the PC.
+
 ## Data quality and duplicates
 
 Admins and maintainers find *Data quality* and *Duplicates* in the user menu and on the dashboard:

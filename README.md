@@ -13,6 +13,7 @@ Kartei is a contact directory for persons and companies. It suits organizations 
   - the whole visible directory is held in the browser
   - search covers names, companies, phone numbers in any format and all searchable fields
   - an advanced filter with nested AND/OR/NOT groups, saved filters, favorites, list export and bulk edit
+  - a phone view for the switchboard: favorites as speed-dial tiles, contacts with only their phone numbers, recently dialled numbers
 - **Kept up to date:** every contact has a responsible colleague who reviews it regularly, with emailed reminders. Read-only users propose changes or deletions, and maintainers apply, adjust or reject them. Every change is audited, and deleted contacts go to a recycle bin.
 - **Data quality:** duplicates are detected and merged, phone numbers are normalized, and a data-quality page lists what needs attention.
 - **Distribution:**

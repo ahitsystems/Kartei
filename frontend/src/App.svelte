@@ -1,7 +1,8 @@
 <script lang="ts">
   import { untrack } from 'svelte'
+  import { MediaQuery } from 'svelte/reactivity'
   import logo from './assets/logo.svg'
-  import { ArrowDownUp, Bookmark, Building2, ChevronDown, ClipboardPaste, Copy, Download, FileUp, Filter, ListChecks, LogOut, Monitor, Moon, Sun, Plus, Printer, RefreshCw, Search, Settings, ShieldCheck, SlidersHorizontal, Trash2, User, UserRound, WifiOff, X } from '@lucide/svelte'
+  import { ArrowDownUp, Bookmark, Building2, ChevronDown, ClipboardPaste, Copy, Download, FileUp, Filter, Headset, ListChecks, LogOut, Monitor, Phone, Moon, Sun, Plus, Printer, RefreshCw, Search, Settings, ShieldCheck, SlidersHorizontal, Trash2, User, UserRound, WifiOff, X } from '@lucide/svelte'
   import AdvancedFilter from './components/AdvancedFilter.svelte'
   import Combobox from './components/Combobox.svelte'
   import Login from './components/Login.svelte'
@@ -19,6 +20,10 @@
   import Account from './components/Account.svelte'
   import BulkBar from './components/BulkBar.svelte'
   import Dashboard from './components/Dashboard.svelte'
+  import PhoneView from './components/PhoneView.svelte'
+  import { logCall } from './lib/calls.svelte'
+  import { telHref } from './lib/tel'
+  import { digits } from './lib/search'
   import { ApiError, download, patch } from './lib/api'
   import { pick } from './lib/selection'
   import { toast } from './lib/toast.svelte'
@@ -55,8 +60,15 @@
   $effect(() => localStorage.setItem('kartei:scope', scope))
   let searchEl: HTMLInputElement | undefined = $state()
   let editing = $state(false)
+  // phone view: per device, like the theme
+  let phoneView = $state(localStorage.getItem('kartei:phone-view') === '1')
+  $effect(() => localStorage.setItem('kartei:phone-view', phoneView ? '1' : '0'))
+  const narrow = new MediaQuery('(max-width: 860px)') // no phone view on phones
+  const phoneViewOn = $derived(phoneView && !narrow.current)
 
   // ------------------------------------------------------------- routing
+  // a phone system that didn't fill in its variable sends a stray %: keep the raw text instead of throwing
+  const decode = (s: string) => { try { return decodeURIComponent(s) } catch { return s } }
   const parts = $derived(route.path.split('/').filter(Boolean))
   const view = $derived.by(() => {
     const [a, b] = parts
@@ -71,6 +83,7 @@
     if (a === 'settings') return { name: 'settings' as const, tab: b ?? 'fields' }
     if (a === 'account') return { name: 'account' as const }
     if (a === 'quality') return { name: 'quality' as const }
+    if (a === 'call' && b) return { name: 'call' as const, number: decode(b) }
     if (a === 'duplicates') return { name: 'duplicates' as const, a: b, b: parts[2] }
     return { name: 'list' as const }
   })
@@ -154,6 +167,25 @@
     const rs = store.records.filter((r) => inScope(r, activeScope))
     return { person: rs.filter((r) => r.kind === 'person').length, company: rs.filter((r) => r.kind === 'company').length }
   })
+
+  // a phone system opens /call/<number> for an incoming call: the one contact with that number, otherwise the hits.
+  // An exact number beats contacts that only contain it (the switchboard's number is part of every extension)
+  $effect(() => {
+    if (view.name !== 'call' || store.status !== 'ready') return
+    const n = view.number.replace(/[^\d+]/g, '')
+    untrack(() => {
+      query = n
+      kind = 'all'
+      scope = 'all'
+      filters = {}
+      adv = emptyGroup()
+      const exact = results.filter((x) => x.tel.split(' ').includes(digits(n)))
+      const hit = exact.length === 1 ? exact[0] : results.length === 1 ? results[0] : null
+      go(hit ? `/${hit.rec.kind}/${hit.rec.uid}` : '/', true)
+    })
+  })
+  // phone view: a number typed into the search can be dialled right away
+  const typedNumber = $derived(phoneViewOn && /^[\d+()/\s-]{3,}$/.test(query.trim()) ? query.trim() : '')
 
   // ------------------------------------------------------------- keyboard
   function open(r: Rec, replace = false) {
@@ -265,6 +297,9 @@
         <Search size={16} />
         <input bind:this={searchEl} bind:value={query} type="search" placeholder={t('top.search')}
                autocomplete="off" spellcheck="false" aria-label={t('top.search')} />
+        {#if typedNumber}
+          <a class="btn sm primary dialnow" href={telHref(typedNumber, store.tel)} onclick={() => logCall('', typedNumber)}><Phone size={13} />{t('phoneview.dial')}</a>
+        {/if}
         {#if query}
           <button class="clear" onclick={() => { query = ''; searchEl?.focus() }} aria-label={t('common.clear')}><X size={14} /></button>
         {:else}
@@ -278,6 +313,10 @@
           <button class="btn icon ghost status" class:spin={store.syncing} onclick={() => store.sync()} title={t('top.sync')}>
             <RefreshCw size={16} />
           </button>
+        {/if}
+        {#if !narrow.current}
+          <button class="btn icon ghost phone-view" class:on={phoneView} role="switch" aria-checked={phoneView} onclick={() => (phoneView = !phoneView)}
+                  title={t('phoneview.toggle')} aria-label={t('phoneview.toggle')}><Headset size={16} /></button>
         {/if}
         <!-- read only: the same menu proposes the new contact to a maintainer -->
         <button class="btn primary" popovertarget="new-menu"><Plus size={16} /><span class="hide-sm">{t('top.new')}</span><ChevronDown size={14} /></button>
@@ -385,7 +424,9 @@
       {/if}
       <main class="pane scroll">
         {#if view.name === 'record'}
-          {#if current}
+          {#if current && phoneViewOn}
+            {#key current.uid}<PhoneView rec={current} />{/key}
+          {:else if current}
             {#key current.uid}<RecordView rec={current} bind:editing onfilter={filterBy} />{/key}
           {:else}
             <Missing uid={view.uid} />
@@ -418,6 +459,8 @@
           {#await qualityPage() then { default: QualityPage }}<QualityPage />{/await}
         {:else if view.name === 'duplicates'}
           {#await duplicatesPage() then { default: DuplicatesPage }}<DuplicatesPage a={view.a} b={view.b} />{/await}
+        {:else if phoneViewOn}
+          <PhoneView />
         {:else}
           <Dashboard onapply={applyState} onscope={(s) => (scope = s)} />
         {/if}
@@ -500,8 +543,11 @@
   .search input { flex: 1; min-width: 0; border: 0; outline: 0; background: transparent; color: var(--text); height: 100%; }
   .search input::-webkit-search-cancel-button { display: none; }
   .clear { border: 0; background: none; padding: 2px; color: var(--muted); cursor: pointer; display: inline-flex; }
+  .dialnow { flex: none; height: 26px; }
   .right { margin-left: auto; display: flex; align-items: center; gap: 6px; }
   .status { color: var(--muted); }
+  .phone-view { color: var(--muted); }
+  .phone-view.on { color: var(--accent); background: var(--accent-soft); }
   .status.warn { color: var(--warn); display: inline-flex; padding: 0 8px; }
   .spin :global(svg) { animation: spin 0.8s linear infinite; }
 

@@ -23,6 +23,13 @@ export default {
   'top.account': 'Mein Konto',
   'top.trash': 'Papierkorb',
   'top.settings': 'Einstellungen',
+  'phoneview.toggle': 'Telefonansicht',
+  'phoneview.calls': 'Zuletzt gewählt',
+  'phoneview.no_calls': 'Noch nichts gewählt',
+  'phoneview.list': 'Liste für die Kurzwahl',
+  'phoneview.typed': 'Eingetippt',
+  'phoneview.dial': 'Wählen',
+  'phoneview.no_phone': 'Keine Rufnummer',
   'top.logout': 'Abmelden',
 
   'kind.person': 'Person',
