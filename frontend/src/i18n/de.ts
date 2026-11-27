@@ -19,7 +19,7 @@ export default {
   'top.search': 'Suchen: Name, Firma, Telefon, E-Mail …',
   'top.new': 'Neu',
   'top.sync': 'Jetzt synchronisieren',
-  'login.offline': "Der Server ist nicht erreichbar. Ohne Verbindung zeigt Kartei nur Daten, die auf diesem Gerät in den letzten 24 Stunden synchronisiert wurden; die gibt es hier nicht. Anmelden geht, sobald der Server wieder erreichbar ist.",
+  'login.offline': "Keine Verbindung zum Server – anmelden ist gerade nicht möglich. Ohne Verbindung zeigt Kartei die Kontakte nur, wenn dieses Gerät in den letzten 24 Stunden synchronisiert hat.",
   'top.offline': 'Offline – zeige zwischengespeicherte Daten',
   'top.account': 'Mein Konto',
   'top.trash': 'Papierkorb',
