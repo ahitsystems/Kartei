@@ -1,1 +1,0 @@
-- **Similar names in the search:** with only a few hits, the list adds names that sound alike (Kölner Phonetik: `Maier` finds Meyer, `Schmitt` Schmidt) or are one typo away (`Fsicher` finds Fischer), marked *similar*. For names heard on the phone. Only person and company names are compared; similar hits aren't counted, exported or bulk edited.
