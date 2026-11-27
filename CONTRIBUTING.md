@@ -18,7 +18,7 @@ cd backend
 export DEBUG=1                                   # SQLite, insecure development key
 ../.venv/bin/python manage.py migrate
 ADMIN_USERNAME=admin ADMIN_PASSWORD=admin12345 ../.venv/bin/python manage.py init_app
-../.venv/bin/python manage.py seed_demo --password demo12345    # optional sample data
+../.venv/bin/python manage.py seed_demo --password demo12345    # optional sample data; fresh again any time: --reset
 ../.venv/bin/python manage.py runserver
 
 cd ../frontend && nvm use && npm ci && npm run dev   # http://localhost:5173, proxies /api to :8000
@@ -26,12 +26,14 @@ cd ../frontend && nvm use && npm ci && npm run dev   # http://localhost:5173, pr
 
 Without the Vite dev server, `npm run build` lets Django serve the app at http://localhost:8000/.
 
+`seed_demo --reset` (only with `DEBUG=1`) empties the whole database and sets it up again like a fresh install: `init_app` with the admin from `ADMIN_USERNAME`/`ADMIN_PASSWORD` (default `admin` / `admin12345`), then the demo data. Use it before the browser tests, screenshots or the demo video, which all expect fresh data.
+
 ### Tests and CI
 
 ```sh
 cd backend && DEBUG=1 ../.venv/bin/python manage.py test kartei relay
 cd frontend && npm test && npm run check
-cd frontend && npm run test:e2e   # browser tests against a running server with seed_demo data (once: npx playwright install chromium)
+cd frontend && npm run test:e2e   # browser tests against a running server with fresh seed_demo data (once: npx playwright install chromium)
 ```
 
 GitHub Actions runs the backend tests on SQLite and PostgreSQL 18, the frontend checks, the browser tests, an upgrade test (the latest release's image with sample data, then this version's migrations: the data must be unchanged) and the Docker build on every push, keeps SBOMs (SPDX and CycloneDX) of the source tree and both images as a build artifact, and scans both images for known vulnerabilities (Grype; results under *Security → Code scanning*; a critical vulnerability with an available fix fails the build). The images of the latest release are scanned again every day. Dependabot proposes weekly updates for Python, npm, the Docker base images and the actions; it stays on the Django LTS and on the newest Python that Django supports. Security fixes for known vulnerabilities arrive as Dependabot PRs right away.
@@ -40,13 +42,20 @@ Every night, a dynamic security scan (OWASP ZAP, `.github/workflows/zap.yml`) st
 
 ### Releases (maintainers)
 
-Move the *Unreleased* entries in `CHANGELOG.md` under a new version heading (`## [1.2.0] – date`), then push a tag such as `v1.2.0`. The *Release* workflow publishes `ghcr.io/ahitsystems/kartei` and `ghcr.io/ahitsystems/kartei-relay` for amd64 and arm64 (tags `1.2.0`, `1.2`, `1`, with SBOM and provenance attestations; a tag like `v1.2.0-beta` gets only the `1.2.0-beta` image tag but is still a regular release, marked as latest) and creates the GitHub release – its text is that version's changelog section plus GitHub's generated notes – with the manuals as PDF, the OpenAPI description (`openapi.yaml`) and the SBOM files.
+Run `python3 scripts/changelog.py release 1.2.0`: it moves the files in `changes/` (and anything still under *Unreleased*) into a new section `## [1.2.0] – date` of `CHANGELOG.md` and deletes them. Add the *New in this release* and *Upgrading* lines at the top of the section by hand, commit, then push a tag such as `v1.2.0`. `python3 scripts/changelog.py preview` shows the section beforehand. The *Release* workflow publishes `ghcr.io/ahitsystems/kartei` and `ghcr.io/ahitsystems/kartei-relay` for amd64 and arm64 (tags `1.2.0`, `1.2`, `1`, with SBOM and provenance attestations; a tag like `v1.2.0-beta` gets only the `1.2.0-beta` image tag but is still a regular release, marked as latest) and creates the GitHub release – its text is that version's changelog section plus GitHub's generated notes – with the manuals as PDF, the OpenAPI description (`openapi.yaml`) and the SBOM files.
 
 ### Screenshots and PDF manuals
 
-With a development server on port 8000 on a fresh, seeded database (`seed_demo --password demo12345`, and `EXPORT_ROOT=/export BACKUP_ROOT=/backup` for neutral paths), `cd frontend && npm run screenshots` regenerates all screenshots in `manuals/img/` in German and English (Playwright; run `npx playwright install chromium` once).
+With a development server on port 8000 on a fresh, seeded database with neutral paths, `cd frontend && npm run screenshots` regenerates all screenshots in `manuals/img/` in German and English (Playwright; run `npx playwright install chromium` once). Prepare the data and start the server like this; the script refuses to run if export or backup paths would show the local machine's directories:
 
-The animation in the README (`manuals/img/en/demo.webp`) comes from `npm run demo-video` on the same kind of database (needs ffmpeg). It changes one job title, so reseed before running it again.
+```sh
+cd backend
+export DEBUG=1 EXPORT_ROOT=/export BACKUP_ROOT=/backup
+../.venv/bin/python manage.py seed_demo --reset --password demo12345
+../.venv/bin/python manage.py runserver
+```
+
+The animation in the README (`manuals/img/en/demo.webp`) comes from `npm run demo-video` on the same kind of database (needs ffmpeg). It changes one job title, so run `seed_demo --reset` before running it again.
 
 `cd frontend && npm run manuals-pdf` builds the PDF versions into `dist/` (needs pandoc and poppler-utils).
 
@@ -99,7 +108,7 @@ cd ../frontend && node scripts/measure-scale.mjs --base http://127.0.0.1:8000 --
 - **No customer specifics:** no company names, host names, paths or field sets of a particular installation in code, examples or documentation. Field sets are JSON files in `examples/`.
 - **Database migrations:** add a new migration for model changes (`manage.py makemigrations kartei`); never edit or squash migrations that are part of a release. CI's upgrade test runs them on the latest release's data.
 - **Audit and safety:** every change to contacts and settings is written to the audit log; anything that deletes asks for confirmation; secrets are stored encrypted or hashed and never returned by the API.
-- **Changelog:** add a line under *Unreleased* in [CHANGELOG.md](CHANGELOG.md) for every change users or administrators notice; it becomes the release text.
+- **Changelog:** for every change users or administrators notice, add a file `changes/<short-name>.<type>.md` with the bullet line(s) (type: `added`, `changed`, `deprecated`, `removed`, `fixed`, `security`; see [changes/README.md](changes/README.md)). Don't edit `CHANGELOG.md` itself, so parallel pull requests don't collide; the entries become the release text.
 - **Documentation:** user-facing changes update the manuals in `manuals/en` *and* `manuals/de`; API changes update `docs/API.md` and `docs/openapi.yaml`. If a screen changes, regenerate the screenshots (see *Screenshots and PDF manuals* above).
 
 ## Commit messages

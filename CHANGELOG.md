@@ -1,15 +1,8 @@
 # Changelog
 
-All notable changes to Kartei are listed here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow [Semantic Versioning](https://semver.org/). When a version is released, its section becomes the text of the GitHub release.
+All notable changes to Kartei are listed here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow [Semantic Versioning](https://semver.org/). When a version is released, its section becomes the text of the GitHub release. Changes that are not released yet are in [`changes/`](changes/), one file each.
 
 ## [Unreleased]
-
-### Added
-- **Phone view:** a switch next to the sync button (remembered per device) turns the start page into speed-dial tiles for the favorites or a saved filter, with a column of recently dialled numbers, and a contact into a large list of its phone numbers only. Search works as always. In the phone view a company lists its people with their extensions, and a number typed into the search can be dialled.
-- **Open the contact for an incoming call:** `/call/<number>` opens the contact with that number (any notation; the exact number wins over extensions), e.g. from the SwyxIt! Web Extension. Setup in the admin manual.
-
-### Changed
-- **Settings:** a navigation on the left in five groups (Basics, Sign-in, Distribution, Data, Operations) instead of 16 tabs in one row; settings open on *General*. On phones a list. Admin manual and its screenshots updated.
 
 ## [0.9.2-beta] – 2026-11-27
 

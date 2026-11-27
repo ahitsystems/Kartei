@@ -1,7 +1,9 @@
 // Screenshots for the manuals: `npm run screenshots` (demo server on :8000 with the demo database).
 // Usage: node scripts/screenshots.mjs [--lang de,en] [--only name,...] [--out ../manuals/img] [--theme light]
 //        [--base http://localhost:8000] [--password demo12345] [--admin-password admin12345]
-// Expects a fresh database with `manage.py seed_demo` data.
+// Expects a fresh database with demo data and neutral paths, best:
+//   DEBUG=1 EXPORT_ROOT=/export BACKUP_ROOT=/backup manage.py seed_demo --reset --password demo12345
+// and the server started with the same EXPORT_ROOT/BACKUP_ROOT. The script refuses to run otherwise.
 import { chromium } from '@playwright/test'
 import { mkdirSync } from 'node:fs'
 
@@ -259,6 +261,26 @@ async function api(ctx, method, path, body) {
   return ctx.request[method](`${BASE}${path}`, { data: body, headers: { 'X-CSRFToken': csrf, Referer: BASE } })
 }
 
+/** the screenshots end up in the public manuals: no paths of the machine taking them (they come from the server's
+ *  EXPORT_ROOT/BACKUP_ROOT, and the demo export profiles keep the EXPORT_ROOT they were seeded with) */
+async function checkSetup(ctx) {
+  await login(ctx, 'admin', '')
+  const ex = await (await api(ctx, 'get', '/api/admin/exports')).json()
+  const st = await (await api(ctx, 'get', '/api/admin/settings')).json()
+  const problems = [
+    ex.export_root !== '/export' && `export root is ${ex.export_root} (start the server with EXPORT_ROOT=/export)`,
+    st.backup_root !== '/backup' && `backup root is ${st.backup_root} (start the server with BACKUP_ROOT=/backup)`,
+    ...ex.exports.filter((e) => !e.path.startsWith('/export/'))
+      .map((e) => `export "${e.name}" writes to ${e.path} (seeded without EXPORT_ROOT=/export)`),
+  ].filter(Boolean)
+  if (problems.length) {
+    console.error(`Not taking screenshots, they would show local paths:\n  ${problems.join('\n  ')}\n` +
+      'Fresh data with neutral paths: DEBUG=1 EXPORT_ROOT=/export BACKUP_ROOT=/backup manage.py seed_demo --reset --password demo12345,\n' +
+      'then start the server with the same EXPORT_ROOT and BACKUP_ROOT.')
+    process.exit(1)
+  }
+}
+
 let h0 = {}
 async function hints(ctx, lang) {
   // a person with company, a company with persons, a contact under review and the pending proposals
@@ -287,6 +309,7 @@ async function hints(ctx, lang) {
 }
 
 const browser = await chromium.launch()
+{ const ctx = await browser.newContext(); await checkSetup(ctx); await ctx.close() }
 for (const lang of LANGS) {
   mkdirSync(`${OUT}/${lang}`, { recursive: true })
   const ctx = await browser.newContext({ viewport: { width: 1280, height: 800 }, colorScheme: THEME, locale: lang, extraHTTPHeaders: OFFICE })
