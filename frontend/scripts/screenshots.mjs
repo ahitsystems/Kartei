@@ -147,6 +147,15 @@ const SHOTS = [
       await p.evaluate(() => localStorage.setItem('kartei:phone-view', '1'))
       await p.reload(); await p.waitForLoadState('networkidle'); await wait(400)
       await p.evaluate(() => localStorage.setItem('kartei:phone-view', '0')) } },
+  // an incoming call: the phone system (SwyxIt! Web Extension) opens /call/<number>; the company's main number opens the company with its people
+  { name: 'phone-view-call', user: 'kkramer', path: '/', steps: async (p, h) => {
+      await p.evaluate(() => localStorage.setItem('kartei:phone-view', '1'))
+      await p.goto(`${BASE}/call/${encodeURIComponent(h.batch.phone)}`); await p.waitForLoadState('networkidle'); await wait(600)
+      await p.evaluate(() => localStorage.setItem('kartei:phone-view', '0')) } },
+  { name: 'phone-view-call-unknown', user: 'kkramer', path: '/', steps: async (p) => {
+      await p.evaluate(() => localStorage.setItem('kartei:phone-view', '1'))
+      await p.goto(`${BASE}/call/${encodeURIComponent('+49 30 5550123')}`); await p.waitForLoadState('networkidle'); await wait(600)
+      await p.evaluate(() => localStorage.setItem('kartei:phone-view', '0')) } },
   { name: 'dashboard-admin', user: 'admin', path: '/' },
   { name: 'user-menu-admin', user: 'admin', path: '/', steps: open('[popovertarget="user-menu"]') },
   { name: 'dup-hint', user: 'mmuster', path: (h) => `/new/person?company=${h.dupCompany}`, steps: async (p) => {

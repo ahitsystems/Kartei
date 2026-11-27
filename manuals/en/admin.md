@@ -1157,6 +1157,8 @@ It also applies to the *phone view* that every user can turn on for themselves a
 
 Kartei opens the contact for a phone number at `https://<Kartei address>/call/<number>`. The number may come in any notation (`+49 511 1234567`, `05111234567`, `0049…`). If exactly one contact matches, it opens; the exact same number wins, so the switchboard number opens the company rather than one of its extensions. Otherwise the list shows the hits and the number is in the search box. With the *phone view* turned on, the contact opens there. Users who aren't signed in sign in first.
 
+![A call from the main number opens the company with its people (phone view)](../img/en/phone-view-call.png)
+
 **SwyxIt!:** the *SwyxIt! Web Extension* opens a web page on events. In the skin editor, set this URL for the *incoming call* event:
 
 ```

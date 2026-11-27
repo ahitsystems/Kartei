@@ -1157,6 +1157,8 @@ Sie gilt auch für die *Telefonansicht*, die jeder Benutzer oben rechts für sic
 
 Kartei öffnet zu einer Rufnummer den passenden Kontakt unter `https://<Kartei-Adresse>/call/<Rufnummer>`. Die Nummer darf in jeder Schreibweise kommen (`+49 511 1234567`, `05111234567`, `0049…`). Passt genau ein Kontakt, öffnet er sich; die exakt gleiche Nummer hat Vorrang, damit die Zentrale die Firma öffnet und nicht eine der Durchwahlen. Sonst zeigt die Liste die Treffer, und die Nummer steht im Suchfeld. Ist die *Telefonansicht* eingeschaltet, öffnet sich der Kontakt dort. Nicht angemeldete Benutzer melden sich erst an.
 
+![Ein Anruf von der Zentrale öffnet die Firma mit ihren Personen (Telefonansicht)](../img/de/phone-view-call.png)
+
 **SwyxIt!:** Die *SwyxIt! Web Extension* öffnet bei Ereignissen eine Webseite. Lege im Skin-Editor für das Ereignis *eingehender Ruf* diese URL fest:
 
 ```

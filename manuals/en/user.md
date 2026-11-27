@@ -260,6 +260,10 @@ If you make a lot of calls, e.g. at reception or the switchboard, switch Kartei 
 - **Typing a number:** when you type a phone number into the search box, a **Dial** button appears in it, even if the number isn't in Kartei.
 - **Incoming calls:** if your administrator set it up, your phone software opens the matching contact in Kartei when a call comes in. With several hits the list shows them; with none, the number is in the search box for calling back.
 
+![Incoming call from a company's main number: the company with its people](../img/en/phone-view-call.png)
+
+![Incoming call from an unknown number: the number in the search box with the Dial button](../img/en/phone-view-call-unknown.png)
+
 ![A contact in the phone view](../img/en/phone-view-contact.png)
 
 To edit a contact or see all its fields, turn the phone view off for a moment. Numbers are dialled like everywhere else in Kartei through a `tel:` link, i.e. by the softphone or phone system your computer uses for that. There is no phone view on phones; Kartei always shows the normal view there.

@@ -260,6 +260,10 @@ Wer viel telefoniert, z. B. am Empfang oder in der Zentrale, schaltet Kartei auf
 - **Nummer eintippen:** Tippst du eine Rufnummer ins Suchfeld, erscheint darin der Knopf **Wählen**, auch wenn die Nummer in Kartei nicht vorkommt.
 - **Eingehende Anrufe:** Hat die Administration es eingerichtet, öffnet deine Telefonsoftware bei einem Anruf den passenden Kontakt in Kartei. Gibt es mehrere Treffer, zeigt die Liste sie; gibt es keinen, steht die Nummer im Suchfeld zum Zurückrufen.
 
+![Eingehender Anruf von der Zentrale einer Firma: die Firma mit ihren Personen](../img/de/phone-view-call.png)
+
+![Eingehender Anruf von einer unbekannten Nummer: die Nummer im Suchfeld mit dem Knopf Wählen](../img/de/phone-view-call-unknown.png)
+
 ![Ein Kontakt in der Telefonansicht](../img/de/phone-view-contact.png)
 
 Zum Bearbeiten oder für alle Felder schaltest du die Telefonansicht kurz aus. Gewählt wird wie überall in Kartei über einen `tel:`-Link, also mit deinem Softphone oder der Telefonanlage, die dein Rechner dafür eingerichtet hat. Auf dem Handy gibt es die Telefonansicht nicht; dort zeigt Kartei immer die normale Ansicht.
