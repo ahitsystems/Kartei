@@ -9,7 +9,7 @@ from unittest import mock
 
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth.models import User
-from django.test import TestCase, override_settings
+from django.test import TestCase, TransactionTestCase, override_settings
 from django.utils import timezone
 
 from pathlib import Path
@@ -1436,6 +1436,10 @@ class SeedDemoTests(TestCase):
             call_command("seed_demo", reset=True, stdout=io.StringIO())
         self.assertEqual(Record.objects.filter(kind="company").count(), 6)
 
+
+class SeedDemoResetTests(TransactionTestCase):
+    """not in a TestCase transaction: PostgreSQL refuses flush's TRUNCATE there (pending FK trigger events),
+    while the real command runs outside a transaction"""
     def test_seed_demo_reset(self):
         import io
         from django.core.management import call_command
