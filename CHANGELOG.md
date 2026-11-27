@@ -5,7 +5,8 @@ All notable changes to Kartei are listed here. The format follows [Keep a Change
 ## [Unreleased]
 
 ### Added
-- **Phone view:** a switch next to the sync button (remembered per device) turns the start page into speed-dial tiles for the favorites or a saved filter, with a column of recently dialled numbers, and a contact into a large list of its phone numbers only. Search works as always.
+- **Phone view:** a switch next to the sync button (remembered per device) turns the start page into speed-dial tiles for the favorites or a saved filter, with a column of recently dialled numbers, and a contact into a large list of its phone numbers only. Search works as always. In the phone view a company lists its people with their extensions, and a number typed into the search can be dialled.
+- **Open the contact for an incoming call:** `/call/<number>` opens the contact with that number (any notation; the exact number wins over extensions), e.g. from the SwyxIt! Web Extension. Setup in the admin manual.
 
 ## [0.9.1-beta] – 2026-11-26
 

@@ -1,6 +1,6 @@
 <script lang="ts">
-  // phone view: favorites as speed-dial tiles; a contact shows only its phone numbers
-  import { Bookmark, History, Phone, Star } from '@lucide/svelte'
+  // phone view: favorites as speed-dial tiles; a contact shows only its phone numbers, a company also its persons'
+  import { Bookmark, History, Phone, Star, Users } from '@lucide/svelte'
   import Avatar from './Avatar.svelte'
   import { store } from '../lib/store.svelte'
   import { dateTime, isEmpty, relTime } from '../lib/format'
@@ -10,6 +10,7 @@
   import { telHref } from '../lib/tel'
   import { listTest, type Scope } from '../lib/listfilter'
   import { emptyGroup } from '../lib/advanced'
+  import { calls, logCall } from '../lib/calls.svelte'
   import type { Rec } from '../lib/types'
 
   let { rec }: { rec?: Rec } = $props()
@@ -32,22 +33,23 @@
 
   $effect(() => { if (rec) store.viewed(rec.uid) })
 
-  // call log: numbers clicked here, newest first. ponytail: per device in localStorage, server-side if it should follow the user
-  type Call = { uid: string; v: string; label: string; at: string }
-  const KEY = 'kartei:phone-view-calls'
-  let calls = $state<Call[]>(JSON.parse(localStorage.getItem(KEY) ?? '[]'))
-  function logCall(r: Rec, p: { label: string; v: string }) {
-    calls = [{ uid: r.uid, v: p.v, label: p.label, at: new Date().toISOString() }, ...calls].slice(0, 20)
-    localStorage.setItem(KEY, JSON.stringify(calls))
-  }
+  const persons = $derived(rec?.kind === 'company' ? store.persons.get(rec.uid) ?? [] : [])
   const favorite = $derived(!!rec && store.favorites.includes(rec.uid))
   const toggleFavorite = () => rec && store.toggleFavorite(rec.uid)
     .catch((e) => toast(e instanceof ApiError ? terr(e.code) : t('err.generic'), { kind: 'error' }))
 </script>
 
+{#snippet tile(r: Rec)}
+  <section class="tile card">
+    <a class="who" href="/{r.kind}/{r.uid}"><Avatar rec={r} size={36} />
+      <span><strong>{store.name(r)}</strong><span class="muted">{sub(r)}</span></span></a>
+    {@render dial(r)}
+  </section>
+{/snippet}
+
 {#snippet dial(r: Rec)}
   {#each phones(r) as p (p.label + p.v)}
-    <a class="dial" href={telHref(p.v, store.tel)} onclick={() => logCall(r, p)}><Phone size={18} /><span class="num tabular">{p.v}</span><span class="lbl">{p.label}</span></a>
+    <a class="dial" href={telHref(p.v, store.tel)} onclick={() => logCall(r.uid, p.v, p.label)}><Phone size={18} /><span class="num tabular">{p.v}</span><span class="lbl">{p.label}</span></a>
   {:else}
     <p class="muted">{t('phoneview.no_phone')}</p>
   {/each}
@@ -63,6 +65,10 @@
         <Star size={15} fill={favorite ? 'currentColor' : 'none'} /></button>
     </header>
     <div class="dials">{@render dial(rec)}</div>
+    {#if persons.length}
+      <h2 class="persons"><Users size={15} />{t('view.persons')}</h2>
+      <div class="tiles">{#each persons as p (p.uid)}{@render tile(p)}{/each}</div>
+    {/if}
   {:else}
     <div class="home">
       <div>
@@ -77,11 +83,7 @@
           </select></h2>
         <div class="tiles">
           {#each tiles as r (r.uid)}
-            <section class="tile card">
-              <a class="who" href="/{r.kind}/{r.uid}"><Avatar rec={r} size={36} />
-                <span><strong>{store.name(r)}</strong><span class="muted">{sub(r)}</span></span></a>
-              {@render dial(r)}
-            </section>
+            {@render tile(r)}
           {:else}
             <p class="muted">{saved ? t('common.no_matches') : t('dash.no_favorites')}</p>
           {/each}
@@ -90,12 +92,12 @@
       <aside>
         <h2><History size={15} />{t('phoneview.calls')}</h2>
         <ul class="calls card">
-          {#each calls.slice(0, 10) as c (c.at)}
+          {#each calls.list.slice(0, 10) as c (c.at)}
             {@const r = store.byUid.get(c.uid)}
             <li>
-              {#if r}<a class="nm" href="/{r.kind}/{r.uid}">{store.name(r)}</a>{:else}<span class="nm muted">—</span>{/if}
+              {#if r}<a class="nm" href="/{r.kind}/{r.uid}">{store.name(r)}</a>{:else}<span class="nm muted">{c.uid ? '—' : t('phoneview.typed')}</span>{/if}
               <time class="muted" datetime={c.at} title={dateTime(c.at)}>{relTime(c.at)}</time>
-              <a class="tabular" href={telHref(c.v, store.tel)} onclick={() => r && logCall(r, c)}><Phone size={13} />{c.v}</a>
+              <a class="tabular" href={telHref(c.v, store.tel)} onclick={() => logCall(c.uid, c.v, c.label)}><Phone size={13} />{c.v}</a>
               <span class="muted lbl2">{c.label}</span>
             </li>
           {:else}
@@ -115,6 +117,7 @@
   h1 { font-size: 24px; }
   h2 .select { height: 30px; width: auto; max-width: 320px; font-size: 13px; color: var(--text); }
   h2 { display: flex; align-items: center; gap: 7px; font-size: 13px; color: var(--muted); margin-bottom: 10px; }
+  h2.persons { margin-top: 26px; }
   .home { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 24px; align-items: start; }
   .calls { list-style: none; margin: 0; padding: 4px 12px; }
   .calls li { display: grid; grid-template-columns: minmax(0, 1fr) auto; column-gap: 8px; padding: 7px 0; border-bottom: 1px solid var(--border); font-size: 13px; }

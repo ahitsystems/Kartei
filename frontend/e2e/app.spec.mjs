@@ -217,6 +217,27 @@ test.describe('finding contacts', () => {
     await page.api('post', '/api/me/favorite', { uid: p.uid, on: false })
   })
 
+  test('phone view: an incoming call opens the contact, a company lists its people, a typed number can be dialled', async ({ as }) => {
+    const page = await as('kkramer')
+    const recs = await page.records()
+    const co = recs.find((r) => r.kind === 'company' && r.data.company_phone && recs.some((x) => x.company === r.uid))
+    const staff = recs.find((r) => r.company === co.uid)
+    await page.goto('/')
+    await page.evaluate(() => localStorage.setItem('kartei:phone-view', '1'))
+    // the switchboard number is part of every extension: the exact number wins
+    await page.goto(`/call/${encodeURIComponent(co.data.company_phone)}`)
+    await expect(page).toHaveURL(new RegExp(`/company/${co.uid}`))
+    await expect(page.getByRole('heading', { name: co.name })).toBeVisible()
+    await expect(page.locator('.tile').filter({ hasText: staff.last_name }).first()).toBeVisible()
+    // an unknown number: no hits, but a Dial button in the search
+    await page.goto('/call/%2B4930999999')
+    await expect(page).toHaveURL(/\/$/)
+    await expect(page.getByRole('link', { name: 'Dial' })).toHaveAttribute('href', /^tel:/)
+    // not outside the phone view
+    await page.getByRole('switch', { name: 'Phone view' }).click()
+    await expect(page.getByRole('link', { name: 'Dial' })).toHaveCount(0)
+  })
+
   test('umlauts and spelling variants find the same contacts', async ({ as }) => {
     const page = await as('kkramer')
     await page.goto('/')

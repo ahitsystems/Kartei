@@ -255,7 +255,10 @@ If you make a lot of calls, e.g. at reception or the switchboard, switch Kartei 
 - **Another list:** with the selector above the tiles you show the contacts of a [saved filter](#saved-filters) instead of the favorites, e.g. a filter *Switchboard* or *Emergency numbers* shared with you. The tiles follow the filter: when a contact changes, it appears or disappears by itself. Kartei remembers the choice in this browser.
 - **Recently dialled:** the column on the right lists the last ten numbers you clicked in the phone view, with contact, kind of number and time. Click a number to dial it again. It only records the click, not whether a call took place, and is kept in this browser only.
 - **Contact:** an open contact shows only its name, company and phone numbers as large buttons, without address, tabs or other fields. Use the star to add or remove it as a favorite.
+- **Company:** an open company shows, below its own numbers, all its people with their extensions, handy for transferring calls.
 - **Search and list** on the left work as always, including the shortcuts <kbd>/</kbd>, <kbd>↑</kbd> <kbd>↓</kbd> and <kbd>Enter</kbd>.
+- **Typing a number:** when you type a phone number into the search box, a **Dial** button appears in it, even if the number isn't in Kartei.
+- **Incoming calls:** if your administrator set it up, your phone software opens the matching contact in Kartei when a call comes in. With several hits the list shows them; with none, the number is in the search box for calling back.
 
 ![A contact in the phone view](../img/en/phone-view-contact.png)
 

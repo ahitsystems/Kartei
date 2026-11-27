@@ -255,7 +255,10 @@ Wer viel telefoniert, z. B. am Empfang oder in der Zentrale, schaltet Kartei auf
 - **Andere Liste:** Über die Auswahl über den Kacheln zeigst du statt der Favoriten die Kontakte eines [gespeicherten Filters](#gespeicherte-filter), z. B. einen mit dir geteilten Filter *Zentrale* oder *Notfallnummern*. Die Kacheln folgen dem Filter: Ändert sich ein Kontakt, erscheint oder verschwindet er von selbst. Die Auswahl merkt sich Kartei in diesem Browser.
 - **Zuletzt gewählt:** In der Spalte rechts stehen die letzten zehn Nummern, die du in der Telefonansicht angeklickt hast, mit Kontakt, Art der Nummer und Uhrzeit. Ein Klick auf die Nummer wählt sie erneut. Der Verlauf merkt sich nur den Klick, nicht ob ein Gespräch zustande kam, und liegt nur in diesem Browser.
 - **Kontakt:** Ein geöffneter Kontakt zeigt nur Name, Firma und seine Rufnummern als große Knöpfe, ohne Adresse, Reiter und andere Felder. Mit dem Stern setzt oder entfernst du ihn als Favoriten.
+- **Firma:** Eine geöffnete Firma zeigt unter ihren eigenen Nummern alle Personen der Firma mit ihren Durchwahlen, praktisch zum Weiterverbinden.
 - **Suche und Liste** links funktionieren wie immer, auch die Tastenkürzel <kbd>/</kbd>, <kbd>↑</kbd> <kbd>↓</kbd> und <kbd>Enter</kbd>.
+- **Nummer eintippen:** Tippst du eine Rufnummer ins Suchfeld, erscheint darin der Knopf **Wählen**, auch wenn die Nummer in Kartei nicht vorkommt.
+- **Eingehende Anrufe:** Hat die Administration es eingerichtet, öffnet deine Telefonsoftware bei einem Anruf den passenden Kontakt in Kartei. Gibt es mehrere Treffer, zeigt die Liste sie; gibt es keinen, steht die Nummer im Suchfeld zum Zurückrufen.
 
 ![Ein Kontakt in der Telefonansicht](../img/de/phone-view-contact.png)
 

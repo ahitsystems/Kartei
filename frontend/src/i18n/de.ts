@@ -27,6 +27,8 @@ export default {
   'phoneview.calls': 'Zuletzt gewählt',
   'phoneview.no_calls': 'Noch nichts gewählt',
   'phoneview.list': 'Liste für die Kurzwahl',
+  'phoneview.typed': 'Eingetippt',
+  'phoneview.dial': 'Wählen',
   'phoneview.no_phone': 'Keine Rufnummer',
   'top.logout': 'Abmelden',
 

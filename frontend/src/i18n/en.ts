@@ -27,6 +27,8 @@ export default {
   'phoneview.calls': 'Recently dialled',
   'phoneview.no_calls': 'Nothing dialled yet',
   'phoneview.list': 'List for speed dial',
+  'phoneview.typed': 'Typed in',
+  'phoneview.dial': 'Dial',
   'phoneview.no_phone': 'No phone number',
   'top.logout': 'Sign out',
 
