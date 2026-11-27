@@ -1,0 +1,1 @@
+- **Open the contact for an incoming call:** `/call/<number>` opens the contact with that number (any notation; the exact number wins over extensions), e.g. from the SwyxIt! Web Extension. Setup in the admin manual.
