@@ -3,7 +3,8 @@
 PostgreSQL: pg_dump in its custom format (compressed; restore with pg_restore). SQLite (development): the online
 backup API. The exporter runs a backup daily at the configured time and on request ("back up now"), keeps the files
 for the configured number of days (always at least the newest), and checks every file it writes (pg_restore --list).
-A restore test, on request, restores the newest file into a scratch database and counts what came back.
+A restore test restores the newest file into a scratch database and counts what came back: after the nightly
+backup every restore_test_days days, and on request.
 """
 import os
 import sqlite3
@@ -92,6 +93,26 @@ def due(s, now=None):
     return not last or datetime.fromisoformat(last) < slot
 
 
+def restore_test_due(s, now=None):
+    """After the nightly backup: is the automatic restore test due? Half a day of slack, so a weekly test doesn't
+    slip a day because last week's ran a few minutes later."""
+    if not s.backup_enabled or not s.restore_test_days:
+        return False
+    last = (s.restore_test_status or {}).get("at")
+    now = now or timezone.now()
+    return not last or now - datetime.fromisoformat(last) >= timedelta(days=s.restore_test_days) - timedelta(hours=12)
+
+
+def scheduled(s):
+    """Exporter tick: the daily backup when it's due, then the restore test when that is due. None = nothing ran."""
+    if not due(s):
+        return None
+    st = run()
+    if st.get("ok") and restore_test_due(Settings.get()):
+        return {"backup": st, "restore_test": restore_test()}
+    return st
+
+
 def _dump(path):
     tmp = path.with_name(path.name + ".part")
     try:
@@ -155,7 +176,10 @@ def restore_test():
     """Restore the newest backup into a scratch database, count the main tables there and in the live database,
     drop the scratch database. Returns the status, also stored in Settings.restore_test_status."""
     Settings.objects.filter(pk=1).update(restore_test_requested=None)
+    prev = Settings.get().restore_test_status or {}
     status = {"at": timezone.now().isoformat()}
+    if ok_at := prev.get("ok_at") or (prev.get("ok") and prev.get("at")):
+        status["ok_at"] = ok_at  # last successful test, kept when this one fails
     newest = files()[:1]
     try:
         if not newest:
@@ -176,7 +200,7 @@ def restore_test():
             live = _count(c)
         if not sum(restored.values()) and sum(live.values()):
             raise BackupError("the restored database is empty")
-        status |= {"ok": True, "tables": {t: [restored[t], live[t]] for t in TABLES}}
+        status |= {"ok": True, "ok_at": status["at"], "tables": {t: [restored[t], live[t]] for t in TABLES}}
     except (BackupError, OSError, sqlite3.Error) as e:
         status |= {"error": str(e)[:300]}
     Settings.objects.filter(pk=1).update(restore_test_status=status)

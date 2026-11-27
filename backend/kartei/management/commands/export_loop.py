@@ -50,7 +50,7 @@ STEPS = [
     ("ldap user import", lambda s: ldapusers.due(s) and log.info("ldap user import: %s", ldapusers.run())),
     ("ad sync", _logged("ad sync", adsync.run)),
     ("carddav relay push", _logged("carddav relay push", relaypush.run)),
-    ("backup", lambda s: backup.due(s) and log.info("backup: %s", backup.run())),
+    ("backup", lambda s: (r := backup.scheduled(s)) and log.info("backup: %s", r)),
     ("quality snapshot", _logged("quality snapshot", quality.take_snapshot)),
     ("webhooks", lambda s: (webhooks.deliver_due(), webhooks.cleanup())),
     ("web push", lambda s: push.deliver_due()),

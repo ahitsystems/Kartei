@@ -1742,7 +1742,7 @@ SETTINGS_ATTRS = ["default_language", "totp_required", "base_url", "trash_days",
                   "ad_enabled", "ad_ou", "ad_bind_dn", "ad_kinds", "ad_columns", "ad_max_shrink_percent"]
 SETTINGS_ATTRS += ["phone_normalize", "phone_country_code", "tel_outside", "tel_plus"]  # quality, tel: links
 SETTINGS_ATTRS += ["map_url", "ldap_users_max_deactivate_percent", "print_logo_mode"]
-SETTINGS_ATTRS += ["backup_enabled", "backup_time", "backup_keep_days"]
+SETTINGS_ATTRS += ["backup_enabled", "backup_time", "backup_keep_days", "restore_test_days"]
 SETTINGS_ATTRS += ["retention_months", "phonebook_enabled", "phonebook_username", "phonebook_allowlist", "audit_signin_days", "monitoring_allowlist", "syslog_enabled", "syslog_host", "syslog_port",
                    "syslog_protocol", "syslog_ca_cert", "syslog_tls_verify", "syslog_facility", "syslog_content"]
 SETTINGS_ATTRS += ["mail_templates", "mail_transport", "mail_graph_sender"]
@@ -1825,6 +1825,8 @@ def settings_put(request):
         errors["backup_time"] = "invalid"
     if not isinstance(s.backup_keep_days, int) or not 1 <= s.backup_keep_days <= 365:
         errors["backup_keep_days"] = "invalid_number"
+    if not isinstance(s.restore_test_days, int) or not 0 <= s.restore_test_days <= 365:
+        errors["restore_test_days"] = "invalid_number"
     if not isinstance(s.ldap_users_max_deactivate_percent, int) or not 0 <= s.ldap_users_max_deactivate_percent <= 100:
         errors["ldap_users_max_deactivate_percent"] = "invalid_number"
     for a in ("trash_days", "export_interval_minutes", "audit_signin_days", "retention_months"):

@@ -1367,6 +1367,8 @@ export default {
   'backup.enabled': "Daily backup",
   'backup.time': "Time",
   'backup.keep': "Keep backups (days)",
+  'backup.restore_days': "Automatic restore test: interval (days)",
+  'backup.restore_days_hint': "0 = on request only. After the nightly backup, Kartei restores it into a scratch database and compares it with the live one; monitoring warns when the last successful test is too old. With your own PostgreSQL server, the database user needs the CREATEDB privilege for this.",
   'backup.run': "Back up now",
   'backup.restore_test': "Test restore",
   'backup.last': "Last backup",
