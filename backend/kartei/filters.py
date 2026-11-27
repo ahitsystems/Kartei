@@ -6,7 +6,7 @@ Records are plain dicts shaped like the browser's (`row()`): uid, kind, first_na
 company (uid), data (only the fields the viewer may see), created_at/updated_at/reviewed_at (ISO), updated_by."""
 import re
 import unicodedata
-from datetime import date, datetime, timedelta
+from datetime import datetime, timedelta
 
 from django.utils import timezone
 

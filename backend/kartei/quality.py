@@ -13,7 +13,7 @@ from . import audit, reviews
 from .dashboard import _uids
 from .api import ADMIN, MAINT, _soft_delete, err, needs, records_qs, ser_record, snapshot, visible_fields
 from .batch import MIN_PREFIX, national
-from .models import FieldDef, NotDuplicate, Proposal, QualitySnapshot, Record, Review, Settings
+from .models import FieldDef, NotDuplicate, Proposal, QualitySnapshot, Record, Settings
 from .validation import EMPTY, PHONE_RE, clean_value, normalize_phone
 
 GROUP_CAP = 5  # a value shared by more records is a switchboard, an info@ address or a common name, not an identity

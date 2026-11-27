@@ -9,7 +9,6 @@ from unittest import mock
 
 from django.contrib.auth.hashers import make_password
 from django.core.cache import cache
-from django.core.management import call_command
 from django.test import SimpleTestCase
 from django.utils import timezone
 
