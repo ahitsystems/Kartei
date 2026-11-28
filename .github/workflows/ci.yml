@@ -218,18 +218,6 @@ jobs:
           load: true
           cache-from: type=gha
           no-cache-filters: backend
-      # software bills of materials (SPDX and CycloneDX) for the source tree and both images, kept as a build artifact
-      - run: mkdir sbom
-      - { uses: anchore/sbom-action@dfcb83b97731532d72be422cbc51ee64adb6fd56, with: { path: ., format: spdx-json, output-file: sbom/kartei-source.spdx.json, upload-artifact: false } }  # v0.24.4: v0.24.4
-      - { uses: anchore/sbom-action@dfcb83b97731532d72be422cbc51ee64adb6fd56, with: { path: ., format: cyclonedx-json, output-file: sbom/kartei-source.cdx.json, upload-artifact: false } }  # v0.24.4: v0.24.4
-      - { uses: anchore/sbom-action@dfcb83b97731532d72be422cbc51ee64adb6fd56, with: { image: kartei:ci, format: spdx-json, output-file: sbom/kartei-image.spdx.json, upload-artifact: false } }  # v0.24.4: v0.24.4
-      - { uses: anchore/sbom-action@dfcb83b97731532d72be422cbc51ee64adb6fd56, with: { image: kartei:ci, format: cyclonedx-json, output-file: sbom/kartei-image.cdx.json, upload-artifact: false } }  # v0.24.4: v0.24.4
-      - { uses: anchore/sbom-action@dfcb83b97731532d72be422cbc51ee64adb6fd56, with: { image: kartei-relay:ci, format: spdx-json, output-file: sbom/kartei-relay-image.spdx.json, upload-artifact: false } }  # v0.24.4: v0.24.4
-      - { uses: anchore/sbom-action@dfcb83b97731532d72be422cbc51ee64adb6fd56, with: { image: kartei-relay:ci, format: cyclonedx-json, output-file: sbom/kartei-relay-image.cdx.json, upload-artifact: false } }  # v0.24.4: v0.24.4
-      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9  # v7
-        with:
-          name: sbom
-          path: sbom/
       # known vulnerabilities (Grype): reported in Security → Code scanning; fails only for critical ones that have a fix
       - id: scan
         uses: anchore/scan-action@11983a512817154c80a9db660c1a184be7513ed6  # v7.4.3
