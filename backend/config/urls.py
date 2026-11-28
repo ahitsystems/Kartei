@@ -25,6 +25,7 @@ urlpatterns = [
     path("api/me/push", M(GET=api.my_push, POST=api.my_push, DELETE=api.my_push)),
     path("api/oidc/start", api.oidc_start),
     path("api/oidc/callback", api.oidc_callback),
+    path("api/kerberos", api.kerberos_view),
     re_path(r"^scim/v2/(?P<path>.*)$", scim.scim),
     path("api/admin/scim/token", M(POST=api.scim_token)),
     path("api/records", M(POST=api.create_record)),

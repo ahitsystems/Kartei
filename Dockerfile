@@ -13,10 +13,10 @@ ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1
 WORKDIR /app/backend
 COPY backend/requirements.txt .
 # Debian's security updates even before the python image is rebuilt with them (e.g. zlib, DSA-6613-1);
-# python-ldap needs headers to build; the -dev packages keep the runtime libs installed
+# python-ldap and gssapi (Kerberos sign-in) need headers to build; the -dev packages keep the runtime libs installed
 RUN apt-get update \
  && apt-get upgrade -y --no-install-recommends \
- && apt-get install -y --no-install-recommends gcc libldap2-dev libsasl2-dev \
+ && apt-get install -y --no-install-recommends gcc libldap2-dev libsasl2-dev libkrb5-dev \
  && pip install --no-cache-dir -r requirements.txt \
  && apt-get purge -y gcc && apt-get autoremove -y && rm -rf /var/lib/apt/lists/*
 COPY backend/ .

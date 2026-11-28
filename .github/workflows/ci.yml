@@ -43,8 +43,8 @@ jobs:
           python-version: "3.14"
           cache: pip
           cache-dependency-path: backend/requirements.txt
-      - name: System libraries for python-ldap
-        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends libldap-dev libsasl2-dev
+      - name: System libraries for python-ldap and gssapi
+        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends libldap-dev libsasl2-dev libkrb5-dev
       - run: pip install -r requirements.txt
       - name: Lint (ruff, rules in backend/ruff.toml)
         if: matrix.db == 'sqlite'
@@ -56,6 +56,47 @@ jobs:
       - run: python manage.py test kartei relay
       - name: Changelog entries in changes/
         run: python ../scripts/changelog.py check && python -m unittest discover -s ../scripts
+
+  kerberos:
+    name: Kerberos sign-in (Samba AD)
+    runs-on: ubuntu-26.04
+    env:
+      DEBUG: "1"
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7
+      - name: Start the Samba AD domain controller (domain, test users, keytab in $RUNNER_TEMP/krb)
+        run: |
+          mkdir -p "$RUNNER_TEMP/krb"
+          docker build -q -t kartei-samba -f .github/kerberos/samba.Dockerfile .github/kerberos
+          docker run -d --name dc --hostname dc1 --privileged -v "$RUNNER_TEMP/krb:/out" \
+            -p 127.0.0.1:88:88 -p 127.0.0.1:88:88/udp -p 127.0.0.1:389:389 kartei-samba
+          sed 's/KDC_HOST/127.0.0.1/' .github/kerberos/krb5.conf > "$RUNNER_TEMP/krb/krb5.conf"
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0  # v7
+        with:
+          python-version: "3.14"
+          cache: pip
+          cache-dependency-path: backend/requirements.txt
+      - name: System libraries for python-ldap and gssapi
+        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends libldap-dev libsasl2-dev libkrb5-dev
+      - run: pip install -r backend/requirements.txt
+      - name: Wait for the domain controller
+        run: |
+          for i in $(seq 1 60); do
+            [ -s "$RUNNER_TEMP/krb/http.keytab" ] && (echo > /dev/tcp/127.0.0.1/389) 2>/dev/null && exit 0
+            sleep 2
+          done
+          docker logs dc; exit 1
+      - name: Sign in with Kerberos tickets from the DC
+        working-directory: backend
+        env:
+          KERBEROS_LIVE: "1"
+          KERBEROS_LDAP: ldap://127.0.0.1
+        run: |
+          KERBEROS_KEYTAB="$RUNNER_TEMP/krb/http.keytab" KERBEROS_CLIENT="$RUNNER_TEMP/krb/krb5.conf" \
+            python manage.py test kartei.test_kerberos_live
+      - name: Domain controller log
+        if: failure()
+        run: docker logs dc
 
   frontend:
     name: Frontend
@@ -110,8 +151,8 @@ jobs:
           node-version-file: .nvmrc
           cache: npm
           cache-dependency-path: frontend/package-lock.json
-      - name: System libraries for python-ldap
-        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends libldap-dev libsasl2-dev
+      - name: System libraries for python-ldap and gssapi
+        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends libldap-dev libsasl2-dev libkrb5-dev
       - run: pip install -r backend/requirements.txt
       - name: Build the frontend
         working-directory: frontend
@@ -175,8 +216,8 @@ jobs:
           python-version: "3.14"
           cache: pip
           cache-dependency-path: backend/requirements.txt
-      - name: System libraries for python-ldap
-        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends libldap-dev libsasl2-dev
+      - name: System libraries for python-ldap and gssapi
+        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends libldap-dev libsasl2-dev libkrb5-dev
       - run: pip install -r backend/requirements.txt
       - name: Migrate with this version; the data must be unchanged and usable
         working-directory: backend

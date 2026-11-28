@@ -529,6 +529,27 @@ Wer sich anmelden kann:
 
 **Zwei-Faktor-Anmeldung und Single Sign-on:** Die Mehrfaktor-Authentifizierung des Providers ersetzt die von Kartei nicht. Hat ein Konto die Zwei-Faktor-Anmeldung eingeschaltet (oder ist sie [Pflicht](#allgemeine-einstellungen)), fragt Kartei nach dem Provider den Code ab. SCIM-Benutzer haben kein Kartei-Passwort: Zum Einschalten brauchen sie stattdessen eine Single-Sign-on-Anmeldung in den letzten 10 Minuten. Erzwingt der Provider bei jeder Anmeldung an Kartei MFA (z. B. per Richtlinie für bedingten Zugriff), schalte *Mehrfaktor-Authentifizierung des Providers zählt* ein: Dann fragt Kartei nach Single Sign-on keinen Code ab, und *Zwei-Faktor-Anmeldung Pflicht für* gilt für diese Sitzungen nicht. Anmeldungen mit Passwort brauchen weiterhin den Kartei-Code.
 
+### Windows-Anmeldung (Kerberos) {#kerberos}
+
+Browser auf Windows-Computern in der Active-Directory-Domäne melden sich ohne Passwort bei Kartei an: Die Anmeldeseite fragt den Browser beim Öffnen einmal nach einem Kerberos-Ticket. Andere Geräte sehen einfach die Anmeldeseite; dort gibt es außerdem den Button *Mit Windows-Konto anmelden*. Nach dem Abmelden meldet sich ein Tab nur noch über diesen Button wieder an.
+
+Wer sich anmelden kann: nur **aktive LDAP-Benutzer**, die Kartei schon kennt (aus dem [Benutzerimport](#ldap-users) oder von einer Anmeldung mit Passwort), nie lokale Benutzer oder Superuser. Kartei merkt sich zu jedem LDAP-Benutzer den `sAMAccountName`, den Namen im Ticket. Deshalb klappt das unabhängig davon, worauf der Anmeldefilter sucht (`sAMAccountName`, `userPrincipalName` oder `mail`). Konten aus anderen Domänen oder Forests werden abgewiesen. Kerberos zählt nicht als Zwei-Faktor-Anmeldung: Konten mit Code werden danach gefragt, auch mit *Mehrfaktor-Authentifizierung des Providers zählt*.
+
+Einrichten (Beispiel-Host `kartei.corp.example.com`, Domäne `CORP.EXAMPLE.COM`):
+
+1. **DNS:** ein A-Record für den Hostnamen von Kartei. Bei einem CNAME muss der Dienstname unten der Name sein, auf den der CNAME zeigt.
+2. **Dienstkonto:** ein Benutzer im AD nur dafür, z. B. `svc-kartei-http`, mit *Kennwort läuft nie ab* und *Dieses Konto unterstützt Kerberos-AES-256-Bit-Verschlüsselung*. Nicht das LDAP-Bind-Konto: Der nächste Schritt setzt sein Passwort neu.
+3. **Dienstname und Keytab** (auf einem Domänencontroller, als Domänen-Admin):
+   ```
+   setspn -S HTTP/kartei.corp.example.com svc-kartei-http
+   ktpass /princ HTTP/kartei.corp.example.com@CORP.EXAMPLE.COM /mapuser CORP\svc-kartei-http /crypto AES256-SHA1 /ptype KRB5_NT_PRINCIPAL /pass * /out kartei.keytab
+   ```
+   `setspn -Q HTTP/kartei.corp.example.com` muss genau ein Konto zeigen. Ein erneutes `ktpass` macht die bisherige Keytab ungültig.
+4. **Kartei:** unter *Single Sign-on* `kartei.keytab` hochladen, *Domänen-Computer automatisch anmelden* einschalten, speichern. LDAP muss eingerichtet sein. Die Keytab wird verschlüsselt gespeichert; wer die Datei hat, kann sich bei Kartei als jeder Benutzer der Domäne anmelden – lösch die Kopie danach. *Keytab entfernen* löscht die gespeicherte (und schaltet die Anmeldung aus).
+5. **Browser** (Gruppenrichtlinie): Edge und Chrome schicken Tickets an Seiten in der Zone *Lokales Intranet* (*Liste der Site-zu-Zonen-Zuweisungen*, Wert `1`) oder in *AuthServerAllowlist*. Firefox: `network.negotiate-auth.trusted-uris` (Richtlinie *Authentication → SPNEGO*).
+
+Die Uhren des Kartei-Hosts und der Domänencontroller dürfen höchstens 5 Minuten auseinanderliegen. Der Reverse Proxy muss den `Authorization`-Header durchreichen (siehe [Reverse Proxy](#reverse-proxy)). Im Audit-Log stehen diese Anmeldungen als *Windows-Anmeldung (Kerberos)*, Ablehnungen mit Grund (z. B. *NTLM statt Kerberos*: Der Computer hat kein Ticket bekommen, meist weil er nicht in der Domäne ist oder die Adresse nicht zum Dienstnamen passt).
+
 ## Felder
 
 Bis auf die Stammfelder (Vor- und Nachname, Firmenname, Firmenzuordnung und Bild) legen Admins alle Kontaktfelder unter *Einstellungen → Felder* fest.

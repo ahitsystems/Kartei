@@ -1,4 +1,5 @@
 """Session: sign-in (local, LDAP, SSO), two-factor, push subscriptions, sign-out, bootstrap and changes."""
+import base64
 import json
 import time
 from datetime import timedelta
@@ -14,7 +15,7 @@ from django.utils import timezone
 from django.utils.dateparse import parse_datetime
 from django.views.decorators.csrf import ensure_csrf_cookie
 
-from .. import audit, oidc, push, totp
+from .. import audit, kerberos, oidc, push, totp
 from ..models import Profile, Record, Settings, user_options
 from ..net import client_ip, count_failure
 from .core import (
@@ -40,7 +41,7 @@ from .workflow import dashboard_prefs, workflow
 def session(request):
     s = Settings.get()
     out = {"default_language": s.default_language, "authenticated": request.user.is_authenticated,
-           "sso": oidc.configured(s), "sso_label": s.oidc_label}
+           "sso": oidc.configured(s), "sso_label": s.oidc_label, "kerberos": kerberos.configured(s)}
     if request.user.is_authenticated:
         out |= {"user": ser_user(request.user) | {"totp_due": totp_due(request.user, request)},
                 "version": dj.KARTEI_VERSION, "source": dj.KARTEI_SOURCE_URL}
@@ -92,7 +93,7 @@ def login_view(request):
     cache.delete(key)
     if sso:
         request.session.pop("sso_pending")
-        _sso_login(request, user)
+        _sso_login(request, user, sso.get("method", "oidc"))
     else:
         login(request, user)
         method = "ldap" if "LDAP" in getattr(user, "backend", "") else "password"
@@ -106,10 +107,45 @@ def _signin_failed(username, reason, user=None):
               {"reason": [None, reason]}, username=username[:150] or "?")
 
 
-def _sso_login(request, user):
+def _sso_login(request, user, method="oidc"):
     login(request, user, backend="django.contrib.auth.backends.ModelBackend")
-    request.session["sso_at"] = int(time.time())  # stands in for the password when a SCIM user sets up 2FA
-    audit.log(user, "login", "session", user.id, user.username, {"method": [None, "oidc"]})
+    if method == "oidc":  # stands in for the password when a SCIM user sets up 2FA; Kerberos never counts as MFA
+        request.session["sso_at"] = int(time.time())
+    audit.log(user, "login", "session", user.id, user.username, {"method": [None, method]})
+
+
+def kerberos_view(request):
+    """Sign-in with the Windows account (kerberos.py). The login page calls this once by itself: without a ticket the
+    answer is the challenge, the browser of a domain computer then retries with one. A refusal never challenges again,
+    so no browser shows a password dialog. POST with the CSRF token: no other site can sign a browser in here."""
+    s = Settings.get()
+    if not kerberos.configured(s):
+        return err("not_found", 404)
+    if request.method != "POST":
+        return err("method_not_allowed", 405)
+    header = request.headers.get("Authorization", "")
+    if not header.lower().startswith("negotiate "):
+        r = err("kerberos_challenge", 401)
+        r["WWW-Authenticate"] = "Negotiate"
+        return r
+    key = f"kerberos-fail:{client_ip(request)}"
+    if cache.get(key, 0) >= 30:
+        return err("too_many_attempts", 429)
+    try:
+        user, principal, out = kerberos.authenticate(s, header)
+    except kerberos.SignInError as e:
+        count_failure(key)
+        _signin_failed(e.principal, str(e))
+        return err(str(e), 403)
+    if profile_of(user).totp_secret_enc:  # the login page asks for the code, login_view finishes
+        request.session["sso_pending"] = {"user": user.id, "at": int(time.time()), "method": "kerberos"}
+        r = err("totp_required", 401)
+    else:
+        _sso_login(request, user, "kerberos")
+        r = JsonResponse({"user": ser_user(user)})
+    if out:  # mutual authentication: the browser checks that this really is the service it asked a ticket for
+        r["WWW-Authenticate"] = "Negotiate " + base64.b64encode(out).decode()
+    return r
 
 
 def oidc_start(request):

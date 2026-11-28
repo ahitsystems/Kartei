@@ -10,7 +10,7 @@ from django.db.models import Count
 from django.http import JsonResponse
 from django.utils import timezone
 
-from .. import adsync, audit, backup, exports, graph, ldapusers, monitoring, oidc, relaypush, reviews, syslog
+from .. import adsync, audit, backup, exports, graph, kerberos, ldapusers, monitoring, oidc, relaypush, reviews, syslog
 from ..models import ApiToken, ScimGroup, Settings
 from ..msg import msg
 from ..validation import CONTROL
@@ -33,7 +33,7 @@ SETTINGS_ATTRS += ["backup_enabled", "backup_time", "backup_keep_days", "restore
 SETTINGS_ATTRS += ["retention_months", "phonebook_enabled", "phonebook_username", "phonebook_allowlist", "audit_signin_days", "monitoring_allowlist", "syslog_enabled", "syslog_host", "syslog_port",
                    "syslog_protocol", "syslog_ca_cert", "syslog_tls_verify", "syslog_facility", "syslog_content"]
 SETTINGS_ATTRS += ["mail_templates", "mail_transport", "mail_graph_sender"]
-SETTINGS_ATTRS += ["oidc_issuer", "oidc_client_id", "oidc_scopes", "oidc_claim", "oidc_label", "oidc_mfa_trusted",
+SETTINGS_ATTRS += ["oidc_issuer", "oidc_client_id", "oidc_scopes", "oidc_claim", "oidc_label", "oidc_mfa_trusted", "kerberos_enabled",
                    "scim_group_admin", "scim_group_maintainer", "scim_group_read"]
 SETTINGS_ATTRS += ["carddav_relay_enabled", "carddav_relay_url", "carddav_relay_tls_verify", "carddav_relay_ca_cert",
                    "carddav_relay_max_delete_percent"]
@@ -50,6 +50,7 @@ def ser_settings(s):
             "ad_bind_password_set": bool(s.ad_bind_password_enc), "ad_status": s.ad_status,
             "ad_sync_requested": s.ad_sync_requested, **relaypush.ser(s),
             "oidc_client_secret_set": bool(s.oidc_client_secret_enc), "scim_token_set": bool(s.scim_token_hash),
+            "kerberos_keytab_set": bool(s.kerberos_keytab_enc),
             "monitoring_token_set": bool(s.monitoring_token_hash), "syslog_status": s.syslog_status,
             "backup_status": s.backup_status, "backup_requested": s.backup_requested, "backup_root": str(backup.BACKUP_ROOT),
             "restore_test_status": s.restore_test_status, "restore_test_requested": s.restore_test_requested,
@@ -61,7 +62,8 @@ def ser_settings(s):
 def _settings_snapshot(s):
     return {**{a: getattr(s, a) for a in SETTINGS_ATTRS}, "ldap_bind_password_enc": s.ldap_bind_password_enc,
             "graph_client_secret_enc": s.graph_client_secret_enc, "smtp_password_enc": s.smtp_password_enc,
-            "ad_bind_password_enc": s.ad_bind_password_enc, "oidc_client_secret_enc": s.oidc_client_secret_enc}
+            "ad_bind_password_enc": s.ad_bind_password_enc, "oidc_client_secret_enc": s.oidc_client_secret_enc,
+            "kerberos_keytab_enc": s.kerberos_keytab_enc}
 
 
 @needs(ADMIN)
@@ -87,6 +89,14 @@ def settings_put(request):
         s.ad_bind_password = str(b["ad_bind_password"] or "")
     if "oidc_client_secret" in b:
         s.oidc_client_secret = str(b["oidc_client_secret"] or "")
+    if b.get("kerberos_keytab") == "":  # "Remove"
+        s.kerberos_keytab = ""
+    elif keytab := str(b.get("kerberos_keytab") or ""):  # base64 of the uploaded file
+        raw = kerberos.decode_keytab(keytab)
+        if raw and kerberos.check(raw):
+            s.kerberos_keytab = keytab
+        else:
+            errors["kerberos_keytab"] = "invalid"
     errors |= adsync.validate(s) | relaypush.validate(s)
     if s.review_mode not in ("off", "rolling", "campaign"):
         errors["review_mode"] = "invalid"
@@ -161,6 +171,9 @@ def settings_put(request):
         errors["oidc_scopes"] = "openid_required"
     if s.oidc_enabled and not (s.oidc_issuer and s.oidc_client_id and s.oidc_client_secret_enc and s.base_url):
         errors["oidc_enabled"] = "oidc_incomplete"  # provider and the public URL (for the redirect URI) are needed
+    s.kerberos_enabled = bool(s.kerberos_enabled)
+    if s.kerberos_enabled and not (s.kerberos_keytab_enc and s.ldap_uri):
+        errors["kerberos_enabled"] = "kerberos_incomplete"  # the keytab, and LDAP: only directory users sign in this way
     for a in ("monitoring_allowlist", "phonebook_allowlist"):
         if not isinstance(getattr(s, a), list):
             errors[a] = "invalid"

@@ -103,6 +103,7 @@ from .session import (  # noqa: F401
     bootstrap,
     changes,
     end_sessions,
+    kerberos_view,
     login_view,
     logout_view,
     my_push,

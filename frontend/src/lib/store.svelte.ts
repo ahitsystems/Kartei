@@ -47,6 +47,8 @@ class Store {
   /** "Sign in with Microsoft" is offered (from the session) */
   sso = $state(false)
   ssoLabel = $state('') // login button text set by the admin; '' = default
+  /** Windows sign-in (Kerberos) is set up: the login page tries it by itself */
+  kerberos = $state(false)
   fields = $state.raw<Field[]>([])
   /** field sections in their order */
   sections = $state.raw<Section[]>([])
@@ -134,7 +136,7 @@ class Store {
     addEventListener('online', () => this.sync())
     // 1) check the session, 2) show the cache if it belongs to that user, 3) fetch deltas
     const cached = (await idbGet(CACHE_KEY).catch(() => undefined)) as Snapshot | undefined
-    let session: { authenticated: boolean; default_language: Lang; sso?: boolean; sso_label?: string; user?: User; version?: string; source?: string }
+    let session: { authenticated: boolean; default_language: Lang; sso?: boolean; sso_label?: string; kerberos?: boolean; user?: User; version?: string; source?: string }
     try {
       session = await get('/api/session')
     } catch {
@@ -148,6 +150,7 @@ class Store {
     this.defaultLang = session.default_language
     this.sso = !!session.sso
     this.ssoLabel = session.sso_label ?? ''
+    this.kerberos = !!session.kerberos
     if (!session.authenticated) return this.toLogin(session.default_language)
     if (cached && cached.username === session.user!.username) {
       this.apply(cached)
@@ -208,6 +211,16 @@ class Store {
   /** code: the two-factor code, asked for after the server answered "totp_required" */
   async login(username: string, password: string, code?: string) {
     const { user } = await post<{ user: User }>('/api/login', { username, password, ...(code ? { code } : {}) })
+    await this.signedIn(user)
+  }
+
+  /** Windows sign-in: the browser answers the server's challenge with a Kerberos ticket, if it has one */
+  async kerberosLogin() {
+    const { user } = await post<{ user: User }>('/api/kerberos')
+    await this.signedIn(user)
+  }
+
+  private async signedIn(user: User) {
     this.user = user
     this.applyLang()
     if (user.totp_due) return void (this.status = 'totp')
@@ -233,6 +246,7 @@ class Store {
   async logout() {
     await disablePush().catch(() => {}) // signed out on purpose: this device gets nothing more for this user
     await post('/api/logout').catch(() => {})
+    sessionStorage.setItem('kartei-auto-sso', 'off') // signed out on purpose: Windows sign-in only by the button (this tab)
     clearDrafts() // signing out on purpose: no unsaved input stays in the tab (an expired session keeps it)
     this.toLogin()
   }

@@ -56,6 +56,8 @@ class Profile(models.Model):
     external_id = models.CharField(max_length=255, blank=True)
     # LDAP: the directory's own id of the account (AD objectGUID, else entryUUID); a renamed account stays this user
     directory_id = models.CharField(max_length=64, blank=True, db_index=True)
+    # LDAP: sAMAccountName (lower-case), the name in the user's Kerberos tickets, whatever the sign-in filter uses
+    kerberos_name = models.CharField(max_length=150, blank=True, db_index=True)
     scim_active = models.BooleanField(default=True)
     # two-factor sign-in (totp.py): secret stored encrypted; empty = off
     totp_secret_enc = models.TextField(blank=True)
@@ -216,6 +218,9 @@ class Settings(models.Model):
     oidc_claim = models.CharField(max_length=20, default="preferred_username")  # matched at the first sign-in
     oidc_label = models.CharField(max_length=60, blank=True)  # login button; empty = "Sign in with single sign-on"
     oidc_mfa_trusted = models.BooleanField(default=False)  # the provider enforces MFA: no Kartei code after single sign-on
+    # Kerberos (kerberos.py): automatic sign-in on domain computers; the service's keytab, stored encrypted
+    kerberos_enabled = models.BooleanField(default=False)
+    kerberos_keytab_enc = models.TextField(blank=True)
     scim_token_hash = models.CharField(max_length=64, blank=True)  # SHA-256 of the bearer token, shown once
     scim_seen_at = models.DateTimeField(null=True, blank=True)  # last authenticated SCIM request (shown in the UI)
     scim_group_admin = models.CharField(max_length=20, blank=True)  # ScimGroup ids
@@ -232,6 +237,7 @@ class Settings(models.Model):
     ad_bind_password = _secret("ad_bind_password_enc")
     carddav_relay_token = _secret("carddav_relay_token_enc")
     oidc_client_secret = _secret("oidc_client_secret_enc")
+    kerberos_keytab = _secret("kerberos_keytab_enc")  # base64 of the keytab file
 
 
 class Kind(models.TextChoices):

@@ -7,7 +7,8 @@ log_ = logging.getLogger("kartei.audit")
 FAILURES = {"login_failed", "auth_failed", "denied"}
 
 SECRET_KEYS = {"password", "totp_secret_enc", "secret_enc", "ldap_bind_password_enc", "carddav_password_hash", "graph_client_secret_enc",
-               "smtp_password_enc", "ad_bind_password_enc", "oidc_client_secret_enc", "scim_token_hash"}
+               "smtp_password_enc", "ad_bind_password_enc", "oidc_client_secret_enc", "scim_token_hash",
+               "kerberos_keytab_enc"}
 
 
 def diff(old, new):
