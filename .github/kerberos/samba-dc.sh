@@ -16,6 +16,13 @@ samba-tool group addmembers kartei-read alice,bob
 samba-tool user disable bob
 samba-tool user create svc-kartei-http --random-password
 samba-tool spn add HTTP/kartei.kartei.test svc-kartei-http
+# AES only, as the manual asks for in AD: without it the KDC issues RC4 tickets, which newer Kerberos libraries can't read
+ldbmodify -H /var/lib/samba/private/sam.ldb <<EOF
+dn: CN=svc-kartei-http,CN=Users,DC=kartei,DC=test
+changetype: modify
+replace: msDS-SupportedEncryptionTypes
+msDS-SupportedEncryptionTypes: 24
+EOF
 samba-tool domain exportkeytab /out/http.keytab --principal=HTTP/kartei.kartei.test
 chmod 644 /out/http.keytab
 exec samba -i
