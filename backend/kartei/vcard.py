@@ -1,4 +1,4 @@
-"""vCard 3.0 rendering in two flavours (iOS / Android), matching the reference cards in tests.py.
+"""vCard 3.0 rendering in two flavours (iOS / Android), matching the reference cards in test_vcard.py.
 
 Admin-defined fields pick a target from TARGETS; the renderer turns collected
 values into flavour-specific lines. Pure functions, no DB access.
