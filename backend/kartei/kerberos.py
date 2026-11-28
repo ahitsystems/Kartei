@@ -6,6 +6,7 @@ and LDAP sign-in store as Profile.kerberos_name: only users Kartei already knows
 """
 import base64
 import hashlib
+import logging
 import os
 import tempfile
 from pathlib import Path
@@ -14,6 +15,7 @@ from django.contrib.auth.models import User
 from django.db.models import Q
 
 KEYTAB_MAX = 64 * 1024
+log = logging.getLogger(__name__)
 
 
 class SignInError(Exception):
@@ -75,7 +77,8 @@ def _accept(raw, token):
         if not ctx.complete:  # Kerberos needs one round trip; anything else is not for us
             raise SignInError("kerberos_failed")
         return str(ctx.initiator_name), str(ctx.target_name).rpartition("@")[2], out
-    except gssapi.exceptions.GSSError:
+    except gssapi.exceptions.GSSError as e:  # the library's reason (wrong key version, clock skew, replay) for the admin
+        log.warning("Kerberos ticket refused: %s", e)
         raise SignInError("kerberos_failed") from None
 
 
