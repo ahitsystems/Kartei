@@ -8,7 +8,8 @@ import hmac
 import json
 import re
 import uuid
-from datetime import datetime, timedelta, timezone as tz
+from datetime import datetime, timedelta
+from datetime import timezone as tz
 
 from django.conf import settings
 from django.contrib.auth.hashers import identify_hasher

@@ -4,10 +4,8 @@ from functools import wraps
 
 from django.http import JsonResponse
 
-from .. import (audit, totp)
-from ..models import (ROLE_RANK, USER_TYPES, FieldDef, FieldSection, Kind,
-                     Profile, Record, Role, Settings)
-
+from .. import audit, totp
+from ..models import ROLE_RANK, USER_TYPES, FieldDef, FieldSection, Kind, Profile, Record, Role, Settings
 
 READ, MAINT, ADMIN = 0, 1, 2
 MAX_IMAGE = 512 * 1024

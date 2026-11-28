@@ -14,8 +14,8 @@ from pathlib import Path
 from django.conf import settings as dj_settings
 from django.utils import timezone
 
-from .msg import msg
 from .models import FieldDef, Record, Settings, ref_names
+from .msg import msg
 from .validation import canonical
 
 log = logging.getLogger(__name__)

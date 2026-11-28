@@ -20,8 +20,8 @@ from urllib.request import HTTPRedirectHandler, Request, build_opener
 from django.conf import settings as dj
 from django.utils import timezone
 
-from .msg import msg
 from .models import AuditEntry, Webhook, WebhookDelivery
+from .msg import msg
 
 log = logging.getLogger(__name__)
 TIMEOUT = 5

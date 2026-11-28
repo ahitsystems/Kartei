@@ -47,7 +47,7 @@ def discovery(s):
         try:
             meta = http("GET", issuer + "/.well-known/openid-configuration")
         except (GraphError, ValueError):  # unreachable, or no JSON (e.g. an HTML error page)
-            raise SignInError("sso_failed")
+            raise SignInError("sso_failed") from None
         if (str(meta.get("issuer", "")).rstrip("/") != issuer
                 or not all(str(meta.get(k, "")).startswith("https://") for k in ("authorization_endpoint", "token_endpoint"))):
             raise SignInError("sso_invalid")
@@ -76,7 +76,7 @@ def _claims(id_token):
         payload = id_token.split(".")[1]
         return json.loads(base64.urlsafe_b64decode(payload + "=" * (-len(payload) % 4)))
     except (IndexError, ValueError):
-        raise SignInError("sso_invalid")
+        raise SignInError("sso_invalid") from None
 
 
 def finish(session, s, code, state):
@@ -90,7 +90,7 @@ def finish(session, s, code, state):
             "client_id": s.oidc_client_id, "client_secret": s.oidc_client_secret, "grant_type": "authorization_code",
             "code": code, "redirect_uri": redirect_uri(s), "code_verifier": pending["verifier"]})
     except (GraphError, ValueError):
-        raise SignInError("sso_failed")
+        raise SignInError("sso_failed") from None
     c = _claims(tok.get("id_token", ""))
     aud = c.get("aud")
     sub = str(c.get("sub") or "")

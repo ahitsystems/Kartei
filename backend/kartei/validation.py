@@ -142,7 +142,7 @@ def _clean(f, value, old=None, cc=None):
         try:
             d = _num(value, f.decimals if t == "decimal" else None)
         except (InvalidOperation, ValueError):
-            raise ValueError("invalid_number")
+            raise ValueError("invalid_number") from None
         if t == "integer" and d != d.to_integral_value():
             raise ValueError("invalid_integer")
         if f.min_value is not None and d < f.min_value:
@@ -166,7 +166,7 @@ def _clean(f, value, old=None, cc=None):
         try:
             _email(v)
         except ValidationError:
-            raise ValueError("invalid_email")
+            raise ValueError("invalid_email") from None
         if CONTROL.search(v):  # a quoted local part may carry them; they break CardDAV XML
             raise ValueError("invalid_email")
         return v
@@ -177,13 +177,13 @@ def _clean(f, value, old=None, cc=None):
         try:
             _url(v)
         except ValidationError:
-            raise ValueError("invalid_url")
+            raise ValueError("invalid_url") from None
         return v
     if t == "date":
         try:
             return date.fromisoformat(str(value)).isoformat()
         except ValueError:
-            raise ValueError("invalid_date")
+            raise ValueError("invalid_date") from None
     if t == "checkbox":
         if not isinstance(value, bool):
             raise ValueError("invalid")

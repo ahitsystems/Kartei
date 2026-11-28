@@ -65,6 +65,7 @@ class SavedFilterTests(ApiTestBase):
 
     def test_sharing_with_roles_and_users(self):
         from django.contrib.auth.models import User
+
         from .models import Profile
         anna = User.objects.create_user("anna", first_name="Anna", last_name="Berg")
         Profile.objects.create(user=anna, role="read")
@@ -156,11 +157,11 @@ class ExportListTests(ApiTestBase):
         self.assertEqual(header[:4], ["Art", "Nachname", "Vorname", "Firma"])
         self.assertNotIn("Vertragsnummer", header)
         self.assertEqual(len(rows), 3)
-        person = dict(zip(header, rows[1]))
+        person = dict(zip(header, rows[1], strict=True))
         self.assertEqual((person["Art"], person["Nachname"], person["Firma"]), ("Person", "Muster", "ACME"))
         self.assertEqual(person["E-Mail"], "m@acme.de")
         self.assertEqual(person["Ansprechpartner intern"], "Ada Admin")
-        company = dict(zip(header, rows[2]))
+        company = dict(zip(header, rows[2], strict=True))
         self.assertEqual((company["Art"], company["Firma"], company["Schlagworte"]), ("Firma", "ACME", "A, B"))
         e = AuditEntry.objects.get(action="export")
         self.assertEqual((e.username, e.target_type, e.changes["rows"]), ("read", "export", [None, 2]))

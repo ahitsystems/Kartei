@@ -226,13 +226,14 @@ class SyslogSocketTests(SimpleTestCase):
         self.assertEqual(int(size), len(rest))
 
     def test_tls_with_own_ca_and_refused_port(self):
+        import datetime as dt
+        import ipaddress
         import tempfile
+
         from cryptography import x509
         from cryptography.hazmat.primitives import hashes, serialization
         from cryptography.hazmat.primitives.asymmetric import ec
         from cryptography.x509.oid import NameOID
-        import datetime as dt
-        import ipaddress
         key = ec.generate_private_key(ec.SECP256R1())
         name = x509.Name([x509.NameAttribute(NameOID.COMMON_NAME, "siem")])
         now = dt.datetime.now(dt.timezone.utc)

@@ -7,8 +7,8 @@ Rules for a changed company field (old -> new):
 import re
 
 from . import audit
-from .msg import msg
 from .models import FieldDef, Record, Settings
+from .msg import msg
 from .validation import clean_value, normalize_phone
 
 MIN_PREFIX = 6  # digits; shorter numbers would match by accident

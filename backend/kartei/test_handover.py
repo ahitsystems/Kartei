@@ -53,8 +53,10 @@ class HandoverTests(ApiTestBase):
         self.assertTrue(AuditEntry.objects.filter(username="admin", target_label="read", action="delete").exists())
 
     def test_no_review_mails_to_people_who_left(self):
-        from django.core import mail
         from unittest import mock
+
+        from django.core import mail
+
         from . import reviews
         from .models import Settings
         Settings.objects.update(smtp_host="smtp.example", smtp_from="kartei@example.com", base_url="https://kartei.example")

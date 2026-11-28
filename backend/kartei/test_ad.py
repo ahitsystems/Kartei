@@ -154,6 +154,7 @@ class UserImportTests(AdTestBase):
         """F-2: AD gives a former user's sAMAccountName to someone else (new objectGUID)."""
         import uuid
         from types import SimpleNamespace
+
         from .auth import DbLDAPBackend
         old, new, other = uuid.uuid4(), uuid.uuid4(), uuid.uuid4()
         entry = self.fake.entries["CN=Lea Leser,OU=Users,DC=ex,DC=local"]

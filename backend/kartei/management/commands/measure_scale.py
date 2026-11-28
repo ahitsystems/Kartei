@@ -2,8 +2,8 @@
 process's peak memory after each. Read-only apart from one login session."""
 import gzip
 import json
-import time
 import resource
+import time
 from unittest import mock
 
 from django.contrib.auth.models import User
@@ -11,8 +11,7 @@ from django.core.management.base import BaseCommand
 from django.test import Client
 
 from kartei import exports, graph
-from kartei.models import (ExportProfile, FieldDef, Record, Settings, default_csv_options, default_xlsx_options,
-                           ref_names)
+from kartei.models import ExportProfile, FieldDef, Record, Settings, default_csv_options, default_xlsx_options, ref_names
 from kartei.vcard import render
 
 

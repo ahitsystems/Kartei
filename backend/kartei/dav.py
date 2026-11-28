@@ -19,8 +19,8 @@ from urllib.parse import unquote, urlparse
 
 from django.contrib.auth.hashers import check_password
 from django.core.cache import cache
-from django.utils.crypto import salted_hmac
 from django.http import HttpResponse, HttpResponseRedirect
+from django.utils.crypto import salted_hmac
 
 from .net import client_ip, count_distinct_failure
 from .vcard import XML_ILLEGAL, flavour_for

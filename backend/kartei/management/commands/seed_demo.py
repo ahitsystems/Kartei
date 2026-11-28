@@ -16,8 +16,7 @@ from django.utils import timezone
 
 from kartei import audit, exports, quality, reviews
 from kartei.api import delete_tree, import_fields
-from kartei.models import (ExportProfile, FieldDef, Profile, Proposal, QualitySnapshot, Record, Role, SavedFilter,
-                           Settings)
+from kartei.models import ExportProfile, FieldDef, Profile, Proposal, QualitySnapshot, Record, Role, SavedFilter, Settings
 
 FIELDS = Path(dj.BASE_DIR).parent / "examples" / "fields-example.json"
 
@@ -196,7 +195,7 @@ class Command(BaseCommand):
         # a few contacts in the recycle bin, deleted by the maintainers over the last days
         for (first, last, job), (c, domain), who, days in zip(
                 [("Lea", "Vogel", "Einkauf"), ("Jan", "Krüger", "Vertrieb"), ("Sara", "Lindner", "Buchhaltung")],
-                companies, ("mmuster", "tbauer", "mmuster"), (1, 4, 9)):
+                companies, ("mmuster", "tbauer", "mmuster"), (1, 4, 9), strict=False):  # companies has more
             r = Record.objects.create(kind="person", first_name=first, last_name=last, company=c, data=data(
                 job_title=job, email=f"{first.lower()}.{last.lower().replace('ü', 'ue')}@{domain}",
                 internal_contact=who))
