@@ -1341,6 +1341,8 @@ export default {
   'kerberos.keytab': "Keytab des Dienstkontos",
   'kerberos.keytab_hint': "Mit ktpass für den SPN {spn} erzeugt. Wer diese Datei hat, kann sich bei Kartei als jeder Benutzer der Domäne anmelden; sie wird verschlüsselt gespeichert.",
   'kerberos.keytab_set': "Eine Keytab ist gespeichert. Zum Ersetzen eine neue Datei wählen.",
+  'kerberos.keytab_remove': "Keytab entfernen",
+  'kerberos.keytab_removed': "Die Keytab wird beim Speichern entfernt.",
   'audit.reason.invalid_credentials': "Falscher Benutzername oder falsches Passwort",
   'audit.reason.invalid_code': "Falscher Code",
   'audit.reason.too_many_attempts': "Zu viele Versuche (15 Minuten gesperrt)",

@@ -1341,6 +1341,8 @@ export default {
   'kerberos.keytab': "Keytab of the service account",
   'kerberos.keytab_hint': "Created with ktpass for the SPN {spn}. Whoever has this file can sign in to Kartei as anyone in the domain; it is stored encrypted.",
   'kerberos.keytab_set': "A keytab is stored. Choose a file to replace it.",
+  'kerberos.keytab_remove': "Remove keytab",
+  'kerberos.keytab_removed': "The keytab will be removed when you save.",
   'audit.reason.invalid_credentials': "Wrong user name or password",
   'audit.reason.invalid_code': "Wrong code",
   'audit.reason.too_many_attempts': "Too many attempts (locked for 15 minutes)",

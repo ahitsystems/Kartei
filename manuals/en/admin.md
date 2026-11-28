@@ -545,7 +545,7 @@ Set it up (example host `kartei.corp.example.com`, domain `CORP.EXAMPLE.COM`):
    ktpass /princ HTTP/kartei.corp.example.com@CORP.EXAMPLE.COM /mapuser CORP\svc-kartei-http /crypto AES256-SHA1 /ptype KRB5_NT_PRINCIPAL /pass * /out kartei.keytab
    ```
    `setspn -Q HTTP/kartei.corp.example.com` must list exactly one account. Running `ktpass` again makes the previous keytab invalid.
-4. **Kartei:** under *Single sign-on* upload `kartei.keytab`, switch on *Sign in domain computers automatically*, save. LDAP must be set up. The keytab is stored encrypted; whoever has the file can sign in to Kartei as anyone in the domain, so delete the copy afterwards.
+4. **Kartei:** under *Single sign-on* upload `kartei.keytab`, switch on *Sign in domain computers automatically*, save. LDAP must be set up. The keytab is stored encrypted; whoever has the file can sign in to Kartei as anyone in the domain, so delete the copy afterwards. *Remove keytab* deletes the stored one (and switches the sign-in off).
 5. **Browsers** (group policy): Edge and Chrome send tickets to sites in the *Local intranet* zone (*Site to Zone Assignment List*, value `1`) or listed in *AuthServerAllowlist*. Firefox: `network.negotiate-auth.trusted-uris` (policy *Authentication → SPNEGO*).
 
 The clocks of the Kartei host and the domain controllers may differ by 5 minutes at most. The reverse proxy must pass the `Authorization` header (see [Reverse proxy](#reverse-proxy)). The audit log shows these sign-ins as *Windows sign-in (Kerberos)*, refusals with their reason (e.g. *NTLM instead of Kerberos*: the computer got no ticket, usually because it isn't in the domain or the address doesn't match the service name).

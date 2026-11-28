@@ -128,6 +128,11 @@ class KerberosTests(ApiTestBase):
         self.assertEqual(Settings.get().kerberos_keytab, KEYTAB)
         e = AuditEntry.objects.filter(changes__has_key="kerberos_keytab_enc").latest("id")
         self.assertEqual(e.changes["kerberos_keytab_enc"], ["***", "***"])
+        # "Remove": only together with switching it off
+        r = self.j("put", "/api/admin/settings", {"kerberos_keytab": ""}, status=400)
+        self.assertEqual(r["fields"], {"kerberos_enabled": "kerberos_incomplete"})
+        self.assertFalse(self.j("put", "/api/admin/settings", {"kerberos_keytab": "", "kerberos_enabled": False})["kerberos_keytab_set"])
+        self.assertEqual(Settings.get().kerberos_keytab_enc, "")
 
 
 class KeytabFileTests(ApiTestBase):

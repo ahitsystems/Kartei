@@ -106,6 +106,13 @@
   <label class="label" for="keytab">{t('kerberos.keytab')}</label>
   <input id="keytab" class="input" class:invalid={errors.kerberos_keytab} type="file" accept=".keytab" onchange={pickKeytab} />
   {#if errors.kerberos_keytab}<div class="error-text">{terr(errors.kerberos_keytab)}</div>{/if}
-  {#if s.kerberos_keytab_set}<p class="hint">{t('kerberos.keytab_set')}</p>{/if}
+  {#if s.kerberos_keytab_set && ctx.secrets.kerberos_keytab === ''}
+    <div class="test">
+      <p class="hint">{t('kerberos.keytab_set')}</p>
+      <button type="button" class="btn" onclick={() => { ctx.secrets.kerberos_keytab = null; s.kerberos_enabled = false }}>{t('kerberos.keytab_remove')}</button>
+    </div>
+  {:else if ctx.secrets.kerberos_keytab === null}
+    <p class="hint">{t('kerberos.keytab_removed')}</p>
+  {/if}
   <p class="hint">{t('kerberos.keytab_hint', { spn })}</p>
 </div>

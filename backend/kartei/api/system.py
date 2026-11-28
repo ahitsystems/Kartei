@@ -89,7 +89,9 @@ def settings_put(request):
         s.ad_bind_password = str(b["ad_bind_password"] or "")
     if "oidc_client_secret" in b:
         s.oidc_client_secret = str(b["oidc_client_secret"] or "")
-    if keytab := str(b.get("kerberos_keytab") or ""):  # base64 of the uploaded file
+    if b.get("kerberos_keytab") == "":  # "Remove"
+        s.kerberos_keytab = ""
+    elif keytab := str(b.get("kerberos_keytab") or ""):  # base64 of the uploaded file
         raw = kerberos.decode_keytab(keytab)
         if raw and kerberos.check(raw):
             s.kerberos_keytab = keytab
