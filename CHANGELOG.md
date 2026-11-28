@@ -4,6 +4,23 @@ All notable changes to Kartei are listed here. The format follows [Keep a Change
 
 ## [Unreleased]
 
+## [0.10.1-beta] – 2026-11-28
+
+New in this release:
+- **Fix:** the sign-in page without a connection no longer suggests that data is waiting behind the sign-in.
+- Maintenance: Python dependencies pinned with hashes, releases only from tested commits, a security policy.
+
+Upgrading: change `KARTEI_IMAGE` (and `RELAY_IMAGE`, if set) in `.env` to `ghcr.io/ahitsystems/kartei:0.10.1-beta` (and `ghcr.io/ahitsystems/kartei-relay:0.10.1-beta`), then pull the new images. There is no database migration.
+
+### Changed
+
+- **Images:** the Python dependencies are now pinned with hashes, so every build of a version installs exactly the same packages. Releases are only built from commits on `main` whose tests passed.
+- **Reporting vulnerabilities:** [SECURITY.md](https://github.com/ahitsystems/Kartei/blob/main/SECURITY.md) describes how to report one privately (GitHub security advisory). The bug report form asks to remove personal data from screenshots and logs.
+
+### Fixed
+
+- **Sign-in page without a connection:** the note no longer suggests that signing in would unlock data stored on the device. It says that signing in isn't possible without a connection, and that the contacts are only shown offline if the device synced in the last 24 hours.
+
 ## [0.10.0-beta] – 2026-11-27
 
 New in this release:
