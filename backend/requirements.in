@@ -6,3 +6,4 @@ whitenoise>=6.12
 psycopg[binary]>=3.3.9
 dj-database-url>=3.1.2
 cryptography>=50.0.2
+gssapi>=1.10  # Kerberos sign-in (kerberos.py); builds against libkrb5-dev

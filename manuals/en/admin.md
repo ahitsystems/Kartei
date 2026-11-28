@@ -529,6 +529,27 @@ Who can sign in:
 
 **Two-factor sign-in and single sign-on:** the provider's multi-factor authentication doesn't replace Kartei's own. If an account has two-factor sign-in switched on (or it is [required](#general-settings)), Kartei asks for the code after the provider. SCIM users have no Kartei password: to switch two-factor sign-in on, they need a single sign-on in the last 10 minutes instead. If the provider enforces MFA for every sign-in to Kartei (e.g. a conditional access policy), switch on *The provider's multi-factor authentication counts*: Kartei then asks for no code after single sign-on, and *Two-factor sign-in required for* doesn't apply to those sessions. Password sign-ins still need Kartei's code.
 
+### Windows sign-in (Kerberos) {#kerberos}
+
+Browsers on Windows computers in the Active Directory domain sign in to Kartei without a password: the login page asks the browser for a Kerberos ticket once when it opens. Other devices just see the login page; there is also a button *Sign in with your Windows account*. After signing out, a tab only signs in again by that button.
+
+Who can sign in: only **active LDAP users** that Kartei already knows (from the [user import](#ldap-users) or one sign-in with the password), never local users or superusers. Kartei keeps each LDAP user's `sAMAccountName`, the name in the ticket, so this works whatever the sign-in filter uses (`sAMAccountName`, `userPrincipalName` or `mail`). Accounts from other domains or forests are refused. Kerberos doesn't count as two-factor sign-in: accounts with a code are asked for it, also with *The provider's multi-factor authentication counts*.
+
+Set it up (example host `kartei.corp.example.com`, domain `CORP.EXAMPLE.COM`):
+
+1. **DNS:** an A record for Kartei's host name. With a CNAME, the service name below must be the name the CNAME points to.
+2. **Service account:** a user in AD only for this, e.g. `svc-kartei-http`, with *Password never expires* and *This account supports Kerberos AES 256 bit encryption*. Not the LDAP bind account: the next step resets its password.
+3. **Service name and keytab** (on a domain controller, as a domain admin):
+   ```
+   setspn -S HTTP/kartei.corp.example.com svc-kartei-http
+   ktpass /princ HTTP/kartei.corp.example.com@CORP.EXAMPLE.COM /mapuser CORP\svc-kartei-http /crypto AES256-SHA1 /ptype KRB5_NT_PRINCIPAL /pass * /out kartei.keytab
+   ```
+   `setspn -Q HTTP/kartei.corp.example.com` must list exactly one account. Running `ktpass` again makes the previous keytab invalid.
+4. **Kartei:** under *Single sign-on* upload `kartei.keytab`, switch on *Sign in domain computers automatically*, save. LDAP must be set up. The keytab is stored encrypted; whoever has the file can sign in to Kartei as anyone in the domain, so delete the copy afterwards.
+5. **Browsers** (group policy): Edge and Chrome send tickets to sites in the *Local intranet* zone (*Site to Zone Assignment List*, value `1`) or listed in *AuthServerAllowlist*. Firefox: `network.negotiate-auth.trusted-uris` (policy *Authentication → SPNEGO*).
+
+The clocks of the Kartei host and the domain controllers may differ by 5 minutes at most. The reverse proxy must pass the `Authorization` header (see [Reverse proxy](#reverse-proxy)). The audit log shows these sign-ins as *Windows sign-in (Kerberos)*, refusals with their reason (e.g. *NTLM instead of Kerberos*: the computer got no ticket, usually because it isn't in the domain or the address doesn't match the service name).
+
 ## Fields
 
 Apart from the core fields (first and last name, company name, company link and image), all contact fields are defined by admins under *Settings → Fields*.

@@ -21,6 +21,13 @@
     s!.scim_token_set = true
   }
   const copy = copyText
+
+  // Windows sign-in: the keytab goes up as base64 with the next save, like the other secrets
+  const spn = $derived(`HTTP/${new URL(origin).hostname}`)
+  async function pickKeytab(e: Event) {
+    const f = (e.currentTarget as HTMLInputElement).files?.[0]
+    ctx.secrets.kerberos_keytab = f ? btoa(String.fromCharCode(...new Uint8Array(await f.arrayBuffer()))) : ''
+  }
 </script>
 
 <p class="hint">{t('sso.intro')}</p>
@@ -89,4 +96,16 @@
 <div>
   <label class="check"><input type="checkbox" bind:checked={s.oidc_mfa_trusted} /> {t('sso.mfa_trusted')}</label>
   <p class="hint">{t('sso.mfa_trusted_hint')}</p>
+</div>
+
+<h3>{t('kerberos.title')}</h3>
+<p class="hint">{t('kerberos.hint')}</p>
+<label class="check"><input type="checkbox" bind:checked={s.kerberos_enabled} /> {t('kerberos.enabled')}</label>
+{#if errors.kerberos_enabled}<div class="error-text">{terr(errors.kerberos_enabled)}</div>{/if}
+<div>
+  <label class="label" for="keytab">{t('kerberos.keytab')}</label>
+  <input id="keytab" class="input" class:invalid={errors.kerberos_keytab} type="file" accept=".keytab" onchange={pickKeytab} />
+  {#if errors.kerberos_keytab}<div class="error-text">{terr(errors.kerberos_keytab)}</div>{/if}
+  {#if s.kerberos_keytab_set}<p class="hint">{t('kerberos.keytab_set')}</p>{/if}
+  <p class="hint">{t('kerberos.keytab_hint', { spn })}</p>
 </div>

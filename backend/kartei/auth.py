@@ -115,13 +115,20 @@ class DbLDAPBackend(LDAPBackend):
         if role is None:
             log.info("LDAP user %s has no Kartei group, login refused", user.username)
             return None
-        Profile.objects.update_or_create(user=user, defaults={"role": role, "source": "ldap",
-                                                              **({"directory_id": did} if (did := directory_id(ldap_user.attrs or {})) else {})})
+        attrs = ldap_user.attrs or {}
+        Profile.objects.update_or_create(user=user, defaults={"role": role, "source": "ldap", "kerberos_name": kerberos_name(attrs),
+                                                              **({"directory_id": did} if (did := directory_id(attrs)) else {})})
         if not user.is_active:  # deactivated by the user import, back in a role group now
             user.is_active = True
             user.save(update_fields=["is_active"])
             audit.log(user, "update", "user", user.id, user.username, {"is_active": [False, True]})
         return user
+
+
+def kerberos_name(attrs):
+    """sAMAccountName, lower-case: AD puts it in the user's Kerberos tickets (kerberos.py), also when they sign in by UPN."""
+    return next(((v[0].decode() if isinstance(v[0], bytes) else v[0]).lower()
+                 for k, v in attrs.items() if k.lower() == "samaccountname" and v), "")
 
 
 def directory_id(attrs):

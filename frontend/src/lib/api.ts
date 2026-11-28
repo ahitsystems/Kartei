@@ -34,7 +34,8 @@ export async function api<T = any>(method: string, url: string, body?: unknown):
   }
   const isJson = res.headers.get('Content-Type')?.startsWith('application/json')
   const data = isJson ? await res.json() : undefined
-  if (res.status === 401 && !url.endsWith('/login')) listeners.forEach((fn) => fn())
+  // sign-in attempts answer 401 by design (wrong password, code needed, Kerberos challenge): not an expired session
+  if (res.status === 401 && !url.endsWith('/login') && !url.endsWith('/kerberos')) listeners.forEach((fn) => fn())
   if (!res.ok) throw new ApiError(res.status, data?.error ?? `http_${res.status}`, data?.fields ?? {}, data)
   return data as T
 }

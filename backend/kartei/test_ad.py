@@ -139,14 +139,14 @@ class UserImportTests(AdTestBase):
         self.fake.entries["CN=Lea Leser,OU=Users,DC=ex,DC=local"]["objectGUID"] = [guid.bytes_le]
         ldapusers.run()
         lea = User.objects.get(username="lleser")
-        self.assertEqual(lea.profile.directory_id, str(guid))
+        self.assertEqual((lea.profile.directory_id, lea.profile.kerberos_name), (str(guid), "lleser"))
         rec = Record.objects.create(kind="company", name="Lea's", data={"internal_contact": "lleser"})
         # the account is renamed in AD (e.g. after a marriage): same objectGUID, new sAMAccountName
         self.fake.entries["CN=Lea Leser,OU=Users,DC=ex,DC=local"]["sAMAccountName"] = [b"LNeu"]
         st = ldapusers.run()
         self.assertEqual((st["renamed"], st["created"], st["deactivated"]), (1, 0, 0))
         lea.refresh_from_db()
-        self.assertEqual((lea.username, lea.is_active), ("lneu", True))
+        self.assertEqual((lea.username, lea.is_active, lea.profile.kerberos_name), ("lneu", True, "lneu"))
         rec.refresh_from_db()
         self.assertEqual(rec.data["internal_contact"], "lneu")  # the contact follows the rename
 

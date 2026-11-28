@@ -3,7 +3,7 @@ import { store } from '../../lib/store.svelte'
 import { t } from '../../lib/i18n.svelte'
 import { toast } from '../../lib/toast.svelte'
 
-const noSecrets = () => ({ ldap_bind_password: '', graph_client_secret: '', smtp_password: '', oidc_client_secret: '' })
+const noSecrets = () => ({ ldap_bind_password: '', graph_client_secret: '', smtp_password: '', oidc_client_secret: '', kerberos_keytab: '' })
 
 /** The settings behind the pages of System.svelte: loaded once, saved as a whole by every page. */
 export class SystemSettings {

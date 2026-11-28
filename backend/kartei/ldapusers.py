@@ -16,7 +16,7 @@ from ldap.controls import SimplePagedResultsControl
 from ldap.filter import escape_filter_chars
 
 from . import audit
-from .auth import directory_id, evict_reused, ldap_settings, rename, role_groups
+from .auth import directory_id, evict_reused, kerberos_name, ldap_settings, rename, role_groups
 from .models import Profile, Settings
 from .msg import msg
 
@@ -79,7 +79,7 @@ def members(conn, s):
     out = {}
     for role, group in role_groups(s):
         flt = f"(&(objectCategory=person)(objectClass=user){ENABLED}(memberOf:{IN_CHAIN}:={escape_filter_chars(group)}))"
-        for _, a in search(conn, s.ldap_user_base, flt, [attr, "givenName", "sn", "mail", "objectGUID", "entryUUID"]):
+        for _, a in search(conn, s.ldap_user_base, flt, [attr, "sAMAccountName", "givenName", "sn", "mail", "objectGUID", "entryUUID"]):
             if name := first(a, attr).lower():  # django-auth-ldap stores usernames lower-case too
                 out.setdefault(name, (role, a))
     return out
@@ -133,6 +133,8 @@ def apply(found, actor=None, limit=None):
                       audit.diff(before, _snapshot(u, p)))
         if (did := directory_id(a)) and p.directory_id != did:  # also for users imported before ids were kept
             Profile.objects.filter(user=u).update(directory_id=did)
+        if p.kerberos_name != (kn := kerberos_name(a)):
+            Profile.objects.filter(user=u).update(kerberos_name=kn)
     for name, u in users.items():
         p = getattr(u, "profile", None)
         if p and p.source == "ldap" and u.is_active and name not in found:

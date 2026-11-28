@@ -1,0 +1,1 @@
+- **Windows sign-in (Kerberos):** browsers on domain computers sign in to Kartei without a password. Set up under Settings → Single sign-on with the keytab of a service account; users come from LDAP as before, whatever the sign-in filter uses (sAMAccountName, UPN or mail). Two-factor sign-in still asks for the code.

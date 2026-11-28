@@ -1,5 +1,6 @@
 <script lang="ts">
-  import { KeyRound } from '@lucide/svelte'
+  import { KeyRound, MonitorCheck } from '@lucide/svelte'
+  import { onMount } from 'svelte'
   import logo from '../assets/logo.svg'
   import { ApiError } from '../lib/api'
   import { store } from '../lib/store.svelte'
@@ -17,6 +18,23 @@
   /** second step: the password (or the identity provider) was right, the account has two-factor sign-in */
   let needCode = $state(ssoCode)
   let code = $state('')
+
+  /** auto: the try when the page opens; a browser without a ticket just stays here, so its failure shows nothing */
+  async function kerberos(auto = false) {
+    busy = true
+    error = ''
+    try {
+      await store.kerberosLogin()
+    } catch (err) {
+      if (err instanceof ApiError && err.code === 'totp_required') needCode = true
+      else if (!auto) error = err instanceof ApiError ? terr(err.code) : t('err.generic')
+    } finally {
+      busy = false
+    }
+  }
+  onMount(() => {
+    if (store.kerberos && !ssoError && !ssoCode && sessionStorage.getItem('kartei-auto-sso') !== 'off') kerberos(true)
+  })
 
   async function submit(e: SubmitEvent) {
     e.preventDefault()
@@ -62,8 +80,13 @@
       {#if error}<div class="error-text" role="alert">{error}</div>{/if}
       <button class="btn primary" disabled={busy || !username || !password}>{t('login.submit')}</button>
     {/if}
-    {#if store.sso && !needCode}
+    {#if (store.sso || store.kerberos) && !needCode}
       <div class="or"><span>{t('sso.or')}</span></div>
+    {/if}
+    {#if store.kerberos && !needCode}
+      <button type="button" class="btn sso" disabled={busy} onclick={() => kerberos()}><MonitorCheck size={16} />{t('kerberos.button')}</button>
+    {/if}
+    {#if store.sso && !needCode}
       <a class="btn sso" href="/api/oidc/start"><KeyRound size={16} />{store.ssoLabel || t('sso.button')}</a>
     {/if}
     <div class="langs">
