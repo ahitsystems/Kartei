@@ -5,10 +5,9 @@ from django.db import transaction
 from django.db.models import Q
 from django.http import JsonResponse
 
-from .. import (audit, handover)
-from ..models import (Profile, Role, assignable)
-from .core import (ADMIN, err, needs, profile_of, rank_of, ser_user)
-
+from .. import audit, handover
+from ..models import Profile, Role, assignable
+from .core import ADMIN, err, needs, profile_of, rank_of, ser_user
 
 # ---------------------------------------------------------------- admin: users
 

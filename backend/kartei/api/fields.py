@@ -5,12 +5,11 @@ from django.db import transaction
 from django.http import JsonResponse
 from django.utils.text import slugify
 
-from .. import (audit)
-from ..models import (USER_TYPES, FieldDef, FieldSection, FieldType, Record, Role, user_options)
+from .. import audit
+from ..models import USER_TYPES, FieldDef, FieldSection, FieldType, Record, Role, user_options
 from ..validation import REGEX_TYPES
 from ..vcard import TARGETS as VCARD_TARGETS
-from .core import (ADMIN, err, needs, sections_list, ser_field, ser_section)
-
+from .core import ADMIN, err, needs, sections_list, ser_field, ser_section
 
 # ---------------------------------------------------------------- admin: fields
 
@@ -63,7 +62,7 @@ def _field_from_body(f, body):
         if len(values) != len(opts) or "" in values or len(set(values)) != len(values):
             errors["options"] = "invalid"
         else:
-            f.options = [{"value": v, "de": o.get("de") or v, "en": o.get("en") or v} for v, o in zip(values, opts)]
+            f.options = [{"value": v, "de": o.get("de") or v, "en": o.get("en") or v} for v, o in zip(values, opts, strict=True)]
     else:
         f.options = []
     aliases = f.import_aliases.split(",") if isinstance(f.import_aliases, str) else f.import_aliases

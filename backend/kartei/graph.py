@@ -17,10 +17,10 @@ from django.contrib.auth.models import User
 from django.core.mail.backends.base import BaseEmailBackend
 from django.utils import timezone
 
-from .msg import msg
-from .webhooks import _NoRedirect
 from .models import FieldDef, Record, SavedFilter, Settings, ref_names
+from .msg import msg
 from .vcard import _ADR_PARTS, collect
+from .webhooks import _NoRedirect
 
 GRAPH = "https://graph.microsoft.com/v1.0"
 PROP = "String {6f1d3c52-8a4e-4d0b-9c7e-2b5f0e9a1d34} Name Kartei"  # "<uid>|<hash>" of what we wrote
@@ -73,9 +73,9 @@ def http(method, url, body=None, token=None, form=None, ctype=None):
                 detail = json.loads(e.read())
             except ValueError:
                 detail = {}
-            raise GraphError(f"HTTP {e.code}: {_message(detail) or e.reason}", e.code)
+            raise GraphError(f"HTTP {e.code}: {_message(detail) or e.reason}", e.code) from e
         except URLError as e:
-            raise GraphError(str(e.reason))
+            raise GraphError(str(e.reason)) from e
 
 
 class Client:
@@ -373,8 +373,8 @@ def _sync(s):
         filter_jobs = []
         if name:
             for folder, ks, t in personal:
-                mine = (lambda d: any(d.get(k) == name for k in ks)) if t == "user" else \
-                    (lambda d: any(name in (d.get(k) or []) for k in ks))
+                mine = (lambda d, ks=ks, name=name: any(d.get(k) == name for k in ks)) if t == "user" else \
+                    (lambda d, ks=ks, name=name: any(name in (d.get(k) or []) for k in ks))
                 jobs.append((folder, {uid: w for uid, w in wanted.items() if mine(w[3].data or {})}))
             if by_filter:
                 filter_jobs = by_filter.jobs(name, reserved, s.graph_filter_prefix)

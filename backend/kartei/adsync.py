@@ -13,8 +13,8 @@ from ldap.dn import escape_dn_chars
 
 from . import exports
 from .ldapusers import connect, error_text, first, search
-from .msg import msg
 from .models import FieldDef, Record, Settings, ref_names
+from .msg import msg
 
 log = logging.getLogger(__name__)
 
@@ -147,7 +147,7 @@ def _load(s):
         attrs = ["cn", "adminDescription"] + sorted({k for _, a in want.values() for k in a})
         existing = search(conn, s.ad_ou, "(objectClass=*)", attrs, scope=ldap.SCOPE_ONELEVEL)
     except ldap.LDAPError as e:
-        raise SyncError(error_text(e))
+        raise SyncError(error_text(e)) from e
     have = sum(1 for _, a in existing if first(a, "adminDescription").startswith(MARK))
     return conn, plan(s, existing, want), have
 

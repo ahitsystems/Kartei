@@ -1,5 +1,5 @@
-# CI runs `ruff check` here: only real errors (unused or undefined names, …), no style rules
+# CI runs `ruff check` here: real errors (F), import order (I) and likely bugs (B); no pure style rules
 line-length = 140
 
 [lint]
-select = ["F"]
+select = ["F", "I", "B"]

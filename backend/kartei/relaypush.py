@@ -56,11 +56,11 @@ def call(s, method, body=None):
         with urlopen(req, timeout=60, context=_context(s)) as r:
             return json.loads(r.read() or b"{}")
     except HTTPError as e:
-        raise RelayError(msg("relay_unauthorized") if e.code == 401 else f"HTTP {e.code}: {e.reason}")
+        raise RelayError(msg("relay_unauthorized") if e.code == 401 else f"HTTP {e.code}: {e.reason}") from e
     except URLError as e:
-        raise RelayError(str(e.reason))
+        raise RelayError(str(e.reason)) from e
     except (OSError, ValueError) as e:  # TLS/CA errors, timeouts, broken JSON
-        raise RelayError(str(e))
+        raise RelayError(str(e)) from e
 
 
 def token_sha256(s):

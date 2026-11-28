@@ -146,7 +146,7 @@ def _filter(request, attrs):
     try:
         return attrs[m.group(1).lower()], json.loads(f'"{m.group(2)}"')
     except ValueError:  # e.g. an invalid escape like \q
-        raise ScimError(400, "Invalid string in filter", "invalidFilter")
+        raise ScimError(400, "Invalid string in filter", "invalidFilter") from None
 
 
 def listing(request, kind):
@@ -156,7 +156,7 @@ def listing(request, kind):
     try:
         start, count = max(int(request.GET.get("startIndex", 1)), 1), min(max(int(request.GET.get("count", 100)), 0), 200)
     except ValueError:
-        raise ScimError(400, "startIndex and count must be numbers", "invalidValue")
+        raise ScimError(400, "startIndex and count must be numbers", "invalidValue") from None
     page = list(qs[start - 1:start - 1 + count])
     return out({"schemas": [LIST], "totalResults": qs.count(), "startIndex": start, "itemsPerPage": len(page),
                 "Resources": [kind["ser"](request, o) for o in page]})

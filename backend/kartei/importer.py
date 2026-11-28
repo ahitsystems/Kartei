@@ -19,8 +19,8 @@ from django.db import transaction
 from django.utils.text import slugify
 
 from . import audit
-from .msg import msg
 from .models import USER_TYPES, FieldDef, Record, assignable
+from .msg import msg
 from .validation import clean_core, clean_value, phone_cc
 
 FORMAT = "kartei-import-mapping"
@@ -81,7 +81,7 @@ def read_csv(raw):
     try:
         rows = list(reader)
     except csv.Error as e:
-        raise ImportError_(msg("import_unreadable", line=reader.line_num, error=str(e)))
+        raise ImportError_(msg("import_unreadable", line=reader.line_num, error=str(e))) from e
     if not rows:
         raise ImportError_(msg("import_empty"))
     return list(reader.fieldnames), rows

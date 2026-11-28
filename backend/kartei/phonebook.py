@@ -20,9 +20,9 @@ from django.views.decorators.csrf import csrf_exempt
 from . import audit, dav, monitoring
 from .batch import MIN_PREFIX, national
 from .models import FieldDef, Record, Settings
-from .vcard import XML_ILLEGAL
 from .net import client_ip
 from .validation import canonical
+from .vcard import XML_ILLEGAL
 
 DIAL = ("tel_work", "tel_custom", "tel_cell", "tel_home", "tel_assistant")  # no fax: a phone can't call one
 KIND = {"tel_cell": "Cell", "tel_home": "Home"}  # Grandstream's phone types; everything else is Work

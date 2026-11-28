@@ -6,14 +6,16 @@ import hashlib
 import logging
 import re
 import time
-from datetime import datetime, timedelta, timezone as tz
+from datetime import datetime, timedelta
+from datetime import timezone as tz
 
 from django.db.models import Count, Max, Q
-from django.utils import timezone
 from django.http import HttpResponse
+from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
 
-from . import audit, dav as proto
+from . import audit
+from . import dav as proto
 from .models import AuditEntry, FieldDef, Record, SavedFilter, Settings, ref_names
 from .vcard import render
 

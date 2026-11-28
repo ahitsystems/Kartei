@@ -55,7 +55,7 @@ def _run(cmd, env=None):
     try:
         r = subprocess.run(cmd, env=env, capture_output=True, text=True, timeout=TIMEOUT)
     except (OSError, subprocess.TimeoutExpired) as e:
-        raise BackupError(str(e))
+        raise BackupError(str(e)) from e
     if r.returncode:
         raise BackupError((r.stderr or r.stdout).strip().splitlines()[-1][:300] if (r.stderr or r.stdout) else f"exit {r.returncode}")
     return r.stdout
@@ -220,7 +220,7 @@ def _restore_postgres(path):
             con.execute(sql.SQL("DROP DATABASE IF EXISTS {}").format(sql.Identifier(name)))
             con.execute(sql.SQL("CREATE DATABASE {}").format(sql.Identifier(name)))
     except psycopg.Error as e:
-        raise BackupError(f"cannot create the scratch database {name}: {str(e).strip()[:200]}")
+        raise BackupError(f"cannot create the scratch database {name}: {str(e).strip()[:200]}") from e
     try:
         _run(["pg_restore", "--no-owner", "--exit-on-error", f"--dbname={name}", str(path)], env=_pg_env(name))
         with psycopg.connect(**{**admin, "dbname": name}) as con:

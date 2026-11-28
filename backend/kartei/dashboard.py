@@ -8,10 +8,35 @@ from django.http import HttpResponse, JsonResponse
 from django.utils import timezone
 
 from . import audit, exports, reviews
-from .api import (MAINT, READ, _add_new_options, _soft_delete, delete_with_persons, err, needs, profile_of, record_kinds,
-                  ser_record, snapshot, visible_audit, visible_fields)
-from .models import (AuditEntry, FieldDef, Kind, Profile, Record, Role, SavedFilter, Settings, default_csv_options,
-                     default_xlsx_options, ref_names, user_label)
+from .api import (
+    MAINT,
+    READ,
+    _add_new_options,
+    _soft_delete,
+    delete_with_persons,
+    err,
+    needs,
+    profile_of,
+    record_kinds,
+    ser_record,
+    snapshot,
+    visible_audit,
+    visible_fields,
+)
+from .models import (
+    AuditEntry,
+    FieldDef,
+    Kind,
+    Profile,
+    Record,
+    Role,
+    SavedFilter,
+    Settings,
+    default_csv_options,
+    default_xlsx_options,
+    ref_names,
+    user_label,
+)
 from .validation import EMPTY, merge_data
 from .vcard import XML_ILLEGAL
 

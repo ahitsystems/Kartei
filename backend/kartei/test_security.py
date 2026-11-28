@@ -11,7 +11,7 @@ from config import proxies
 from config.proxies import trusted
 
 from . import exports, ldapusers, syslog, vcard
-from .auth import DbLDAPBackend
+from .auth import DbLDAPBackend, _LDAPUser
 from .management.commands import export_loop
 from .models import AuditEntry, ExportProfile, FieldDef, Profile, Record, SavedFilter, Settings
 from .net import client_ip
@@ -161,11 +161,11 @@ class LdapTakeoverTests(ApiTestBase):
         boss = User.objects.create_superuser("boss", "", "pw-bossbossboss")
         backend = DbLDAPBackend()
         with mock.patch("django_auth_ldap.backend.LDAPBackend.get_or_build_user", return_value=(boss, False)):
-            with self.assertRaises(Exception):
+            with self.assertRaises(_LDAPUser.AuthenticationFailed):
                 backend.get_or_build_user("boss", mock.Mock(attrs={}))
         plain = User.objects.create_user("plain")  # local, no profile yet
         with mock.patch("django_auth_ldap.backend.LDAPBackend.get_or_build_user", return_value=(plain, False)):
-            with self.assertRaises(Exception):
+            with self.assertRaises(_LDAPUser.AuthenticationFailed):
                 backend.get_or_build_user("plain", mock.Mock(attrs={}))
         ldap_user = User.objects.create_user("dir")
         Profile.objects.create(user=ldap_user, source="ldap")
@@ -186,6 +186,7 @@ class LdapTakeoverTests(ApiTestBase):
 class ExportTests(ApiTestBase):
     def test_formulas_are_neutralised(self):
         from openpyxl import load_workbook
+
         from .models import default_csv_options, default_xlsx_options
         x = exports.render_xlsx(["a"], [['=HYPERLINK("http://x")'], ["ok\x01"], ["\x01=1+1"]], default_xlsx_options())
         cells = [c for c in load_workbook(io.BytesIO(x)).active["A"]][1:]
@@ -237,6 +238,7 @@ class FormatTests(ApiTestBase):
 class EdgeCaseTests(ApiTestBase):
     def test_reset_2fa_command(self):
         from io import StringIO
+
         from django.core.management import call_command
         p = self.users["admin"].profile
         p.totp_secret, p.totp_recovery = "JBSWY3DPEHPK3PXP", ["x"]
@@ -248,8 +250,9 @@ class EdgeCaseTests(ApiTestBase):
         self.assertIn("switched off", out.getvalue())
 
     def test_same_wrong_carddav_login_counts_once(self):
-        from django.contrib.auth.hashers import make_password
         import base64
+
+        from django.contrib.auth.hashers import make_password
         cache.clear()
         s = Settings.get()
         s.carddav_enabled, s.carddav_username, s.carddav_password_hash = True, "phone", make_password("right")

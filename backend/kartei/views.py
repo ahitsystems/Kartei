@@ -1,8 +1,7 @@
 import re
 
 from django.conf import settings
-from django.http import (FileResponse, HttpResponse, HttpResponseNotFound, HttpResponsePermanentRedirect,
-                         HttpResponseRedirect)
+from django.http import FileResponse, HttpResponse, HttpResponseNotFound, HttpResponsePermanentRedirect, HttpResponseRedirect
 from django.utils.http import content_disposition_header
 from django.views.decorators.cache import never_cache
 from django.views.decorators.csrf import csrf_exempt

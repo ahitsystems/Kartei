@@ -5,7 +5,6 @@ from django.core.management import call_command
 from django.utils import timezone
 
 from . import batch, quality
-
 from .models import AuditEntry, FieldDef, NotDuplicate, Proposal, QualitySnapshot, Record, Review, Settings
 from .tests import ApiTestBase, import_test_csv
 from .validation import normalize_phone

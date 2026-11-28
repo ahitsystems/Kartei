@@ -73,7 +73,9 @@ class PushJobTests(TestCase):
 
     def test_filter_books_on_the_relay(self):
         from django.contrib.auth.models import User
+
         from relay.models import FilterBook
+
         from . import carddav
         from .models import Profile, SavedFilter
         carddav._members.update(stamp=None, at=0.0, sets={}, view=None)
