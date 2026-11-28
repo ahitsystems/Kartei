@@ -45,7 +45,7 @@ cp .env.example .env        # set SECRET_KEY, POSTGRES_PASSWORD, ADMIN_USERNAME/
 docker compose up -d --build
 ```
 
-Instead of building, you can use the released images: set `KARTEI_IMAGE=ghcr.io/ahitsystems/kartei:0.10.0-beta` in `.env`, then `docker compose pull && docker compose up -d --no-build` (relay: `RELAY_IMAGE=ghcr.io/ahitsystems/kartei-relay:0.10.0-beta`). For testing the current state of `main`, there are nightly images: `ghcr.io/ahitsystems/kartei:nightly` (and `kartei-relay:nightly`), built every night when `main` has changed, plus `:sha-<commit>` per build. They are not releases; don't use them in production.
+Instead of building, you can use the released images: set `KARTEI_IMAGE=ghcr.io/ahitsystems/kartei:0.10.1-beta` in `.env`, then `docker compose pull && docker compose up -d --no-build` (relay: `RELAY_IMAGE=ghcr.io/ahitsystems/kartei-relay:0.10.1-beta`). For testing the current state of `main`, there are nightly images: `ghcr.io/ahitsystems/kartei:nightly` (and `kartei-relay:nightly`), built every night when `main` has changed, plus `:sha-<commit>` per build. They are not releases; don't use them in production.
 
 To use a dedicated PostgreSQL server or cluster instead of the bundled database container, set `DATABASE_URL` and use `compose.external-db.yaml`; the administrator manual (Installation) has the details.
 
