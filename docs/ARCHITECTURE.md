@@ -32,7 +32,7 @@ The Django project is `config`; the main app is `kartei`. The DMZ relay is the a
 | Module | Purpose |
 |---|---|
 | `models.py` | `Record` (person or company; core columns plus a JSON `data` for all admin-defined fields), `FieldDef`, `FieldSection`, `Settings` (singleton), `Profile` (role, language), `Review`, `Proposal`, `SavedFilter`, `ApiToken`, `ExportProfile`, `AuditEntry`, `NotDuplicate` |
-| `api.py` | JSON API for the SPA: session auth with CSRF, role checks (`needs`), error codes instead of texts |
+| `api/` | JSON API for the SPA: session auth with CSRF, role checks (`needs`), error codes instead of texts. One module per area: `core` (permission checks, serializers), `session` (sign-in, two-factor, own account, bootstrap), `records` (contacts, recycle bin, history, images), `workflow` (reviews, proposals), `fields`, `users`, `system` (settings, tokens, connection tests, syncs), `transfer` (export profiles, audit log, CSV import); `api/__init__.py` re-exports every name, so `kartei.api.<name>` works everywhere |
 | `validation.py` | per-type validation and normalization of field values (incl. phone numbers) |
 | `audit.py` | append-only audit log with `{key: [old, new]}` diffs, secrets masked; every entry gets the client IP (`net.py` middleware) and is also written to the `kartei.audit` logger |
 | `monitoring.py` | `/healthz`, `/readyz` and `/api/monitoring/status` (checks of the database, the exporter heartbeat and every enabled job, plus metrics; JSON or PRTG), token plus IP allowlist |
